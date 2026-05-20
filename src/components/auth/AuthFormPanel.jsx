@@ -1,18 +1,24 @@
 import { useState } from "react";
-import { Moon,Settings } from "lucide-react";
+import { Moon, Settings, Mail, Lock, Eye, EyeOff, User } from "lucide-react";
+import googleImg from "../../assets/google.png";
+import githubImg from "../../assets/github.png";
+
+/* ── Reusable input field ── */
 function InputField({ label, type = "text", placeholder, icon, rightEl }) {
   const [focused, setFocused] = useState(false);
 
   return (
     <div style={{ marginBottom: 20 }}>
-      <label style={{
-        display: "block",
-        fontFamily: "'Space Grotesk'", fontWeight: 600,
-        fontSize: 12, letterSpacing: "0.1em", textTransform: "uppercase",
-        color: "#94A3B8", marginBottom: 8,
-      }}>
-        {label}
-      </label>
+      {label && (
+        <label style={{
+          display: "block",
+          fontFamily: "'Space Grotesk'", fontWeight: 600,
+          fontSize: 12, letterSpacing: "0.1em", textTransform: "uppercase",
+          color: "#94A3B8", marginBottom: 8,
+        }}>
+          {label}
+        </label>
+      )}
       <div style={{
         display: "flex", alignItems: "center",
         background: "rgba(255,255,255,0.04)",
@@ -24,7 +30,9 @@ function InputField({ label, type = "text", placeholder, icon, rightEl }) {
         gap: 10,
       }}>
         {icon && (
-          <span style={{ color: "#475569", fontSize: 15, flexShrink: 0 }}>{icon}</span>
+          <span style={{ color: "#475569", display: "flex", alignItems: "center", flexShrink: 0 }}>
+            {icon}
+          </span>
         )}
         <input
           type={type}
@@ -37,13 +45,18 @@ function InputField({ label, type = "text", placeholder, icon, rightEl }) {
             padding: "13px 0",
           }}
         />
-        {rightEl && <span style={{ color: "#475569", fontSize: 15, flexShrink: 0, cursor: "pointer" }}>{rightEl}</span>}
+        {rightEl && (
+          <span style={{ color: "#475569", display: "flex", alignItems: "center", flexShrink: 0, cursor: "pointer" }}>
+            {rightEl}
+          </span>
+        )}
       </div>
     </div>
   );
 }
 
-function OAuthButton({ icon, label }) {
+/* ── OAuth button with real brand image ── */
+function OAuthButton({ imgSrc, label }) {
   const [hovered, setHovered] = useState(false);
   return (
     <button
@@ -59,41 +72,64 @@ function OAuthButton({ icon, label }) {
         transition: "background 0.2s, border-color 0.2s",
       }}
     >
-      <span style={{ fontSize: 18 }}>{icon}</span>
+      <img src={imgSrc} alt={label} style={{ width: 18, height: 18, objectFit: "contain" }} />
       {label}
     </button>
   );
 }
 
+/* ── Custom checkbox ── */
+function Checkbox({ checked, onChange, children }) {
+  return (
+    <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+      <div
+        onClick={onChange}
+        style={{
+          width: 16, height: 16, marginTop: 2, flexShrink: 0,
+          border: `1px solid ${checked ? "#6366F1" : "rgba(255,255,255,0.2)"}`,
+          borderRadius: 3, cursor: "pointer",
+          background: checked ? "#6366F1" : "transparent",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          transition: "all 0.15s",
+        }}
+      >
+        {checked && <span style={{ color: "#fff", fontSize: 10 }}>✓</span>}
+      </div>
+      <span style={{ fontFamily: "'DM Sans'", fontSize: 14, color: "#94A3B8", lineHeight: 1.5 }}>
+        {children}
+      </span>
+    </div>
+  );
+}
+
+/* ── Main form panel ── */
 export default function AuthFormPanel({ variant = "login" }) {
-  const [showPass, setShowPass] = useState(false);
-  const [remember, setRemember] = useState(false);
-  const [agree, setAgree] = useState(false);
+  const [showPass, setShowPass]   = useState(false);
+  const [remember, setRemember]   = useState(false);
+  const [agree, setAgree]         = useState(false);
 
   const isLogin = variant === "login";
 
   return (
     <div style={{
-      width: "50%",
-      minHeight: "100vh",
+      width: "50%", minHeight: "100vh",
       background: "#0F0F1A",
       padding: "40px 64px",
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
+      display: "flex", flexDirection: "column", justifyContent: "center",
       position: "relative",
     }}>
 
-      {/* Top right icons */}
+      {/* Top right — lucide icons */}
       <div style={{ position: "absolute", top: 24, right: 24, display: "flex", gap: 8 }}>
-        {[<Moon/>, <Settings/>].map((ic) => (
-          <button key={ic} style={{
+        {[<Moon size={16} />, <Settings size={16} />].map((ic, i) => (
+          <button key={i} style={{
             width: 36, height: 36, borderRadius: 8,
             background: "rgba(255,255,255,0.05)",
             border: "1px solid rgba(255,255,255,0.08)",
-            cursor: "pointer", fontSize: 14,
+            cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center",
-            transition: "background 0.2s",
+            color: "#94A3B8",
+            transition: "background 0.2s, color 0.2s",
           }}>
             {ic}
           </button>
@@ -119,10 +155,10 @@ export default function AuthFormPanel({ variant = "login" }) {
             : "Create your account and begin your journey today."}
         </p>
 
-        {/* OAuth buttons */}
+        {/* OAuth buttons — real brand images */}
         <div style={{ display: "flex", gap: 12, marginBottom: 28 }}>
-          <OAuthButton icon="🐙" label="GITHUB" />
-          <OAuthButton icon="G" label="GOOGLE" />
+          <OAuthButton imgSrc={githubImg} label="GITHUB" />
+          <OAuthButton imgSrc={googleImg} label="GOOGLE" />
         </div>
 
         {/* Divider */}
@@ -137,14 +173,23 @@ export default function AuthFormPanel({ variant = "login" }) {
           <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
         </div>
 
-        {/* Form fields */}
+        {/* Name field — signup only */}
         {!isLogin && (
-          <InputField label="FULL NAME" placeholder="John Doe" icon="👤" />
+          <InputField
+            label="FULL NAME"
+            placeholder="John Doe"
+            icon={<User size={15} />}
+          />
         )}
 
-        <InputField label="EMAIL ADDRESS" placeholder="dev@codepath.com" icon="✉️" />
+        {/* Email */}
+        <InputField
+          label="EMAIL ADDRESS"
+          placeholder="dev@codepath.com"
+          icon={<Mail size={15} />}
+        />
 
-        {/* Password field with forgot link */}
+        {/* Password */}
         <div style={{ marginBottom: 20 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
             <label style={{
@@ -159,7 +204,6 @@ export default function AuthFormPanel({ variant = "login" }) {
                 fontFamily: "'Space Grotesk'", fontWeight: 600,
                 fontSize: 12, letterSpacing: "0.08em", textTransform: "uppercase",
                 color: "#6366F1", textDecoration: "none",
-                transition: "color 0.2s",
               }}>
                 FORGOT PASSWORD?
               </a>
@@ -169,69 +213,42 @@ export default function AuthFormPanel({ variant = "login" }) {
             label=""
             type={showPass ? "text" : "password"}
             placeholder="••••••••••••"
-            icon="🔒"
+            icon={<Lock size={15} />}
             rightEl={
-              <span onClick={() => setShowPass((p) => !p)} style={{ cursor: "pointer" }}>
-                {showPass ? "🙈" : "👁️"}
+              <span onClick={() => setShowPass((p) => !p)}>
+                {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
               </span>
             }
           />
         </div>
 
+        {/* Confirm password — signup only */}
         {!isLogin && (
           <InputField
             label="CONFIRM PASSWORD"
             type="password"
             placeholder="••••••••••••"
-            icon="🔒"
+            icon={<Lock size={15} />}
           />
         )}
 
         {/* Checkbox */}
-        {isLogin ? (
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 28 }}>
-            <div
-              onClick={() => setRemember((r) => !r)}
-              style={{
-                width: 16, height: 16,
-                border: `1px solid ${remember ? "#6366F1" : "rgba(255,255,255,0.2)"}`,
-                borderRadius: 3, cursor: "pointer",
-                background: remember ? "#6366F1" : "transparent",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                flexShrink: 0, transition: "all 0.15s",
-              }}
-            >
-              {remember && <span style={{ color: "#fff", fontSize: 10 }}>✓</span>}
-            </div>
-            <span style={{ fontFamily: "'DM Sans'", fontSize: 14, color: "#94A3B8" }}>
+        <div style={{ marginBottom: 28 }}>
+          {isLogin ? (
+            <Checkbox checked={remember} onChange={() => setRemember((r) => !r)}>
               Remember this device for 30 days
-            </span>
-          </div>
-        ) : (
-          <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 28 }}>
-            <div
-              onClick={() => setAgree((a) => !a)}
-              style={{
-                width: 16, height: 16, marginTop: 2,
-                border: `1px solid ${agree ? "#6366F1" : "rgba(255,255,255,0.2)"}`,
-                borderRadius: 3, cursor: "pointer",
-                background: agree ? "#6366F1" : "transparent",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                flexShrink: 0, transition: "all 0.15s",
-              }}
-            >
-              {agree && <span style={{ color: "#fff", fontSize: 10 }}>✓</span>}
-            </div>
-            <span style={{ fontFamily: "'DM Sans'", fontSize: 14, color: "#94A3B8", lineHeight: 1.5 }}>
+            </Checkbox>
+          ) : (
+            <Checkbox checked={agree} onChange={() => setAgree((a) => !a)}>
               I agree to the{" "}
               <a href="#" style={{ color: "#6366F1", textDecoration: "none" }}>Terms of Service</a>
               {" "}and{" "}
               <a href="#" style={{ color: "#6366F1", textDecoration: "none" }}>Privacy Policy</a>
-            </span>
-          </div>
-        )}
+            </Checkbox>
+          )}
+        </div>
 
-        {/* Submit button */}
+        {/* Submit */}
         <button
           className="btnP"
           style={{
@@ -246,7 +263,7 @@ export default function AuthFormPanel({ variant = "login" }) {
           {isLogin ? "INITIALIZE SESSION ›" : "BEGIN YOUR PATH ›"}
         </button>
 
-        {/* Switch link */}
+        {/* Switch page link */}
         <p style={{ textAlign: "center", fontFamily: "'DM Sans'", fontSize: 14, color: "#94A3B8" }}>
           {isLogin ? "New to the path? " : "Already on the path? "}
           <a
@@ -257,7 +274,7 @@ export default function AuthFormPanel({ variant = "login" }) {
           </a>
         </p>
 
-        {/* Footer links */}
+        {/* Bottom links */}
         <div style={{ display: "flex", justifyContent: "center", gap: 24, marginTop: 32 }}>
           {["SUPPORT", "PRIVACY", "TERMS"].map((l) => (
             <a key={l} href="#" style={{
