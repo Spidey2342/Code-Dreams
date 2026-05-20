@@ -1,12 +1,18 @@
-import React from 'react'
-import HomePage from './pages/HomePage'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import HomePage from "./pages/HomePage";
 
 function App() {
   return (
-    <div>
-      <HomePage/>
-    </div>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        {/* Add new pages here as you build them:      */}
+        {/* <Route path="/login"     element={<LoginPage />} />    */}
+        {/* <Route path="/signup"    element={<SignupPage />} />   */}
+        {/* <Route path="/dashboard" element={<Dashboard />} />   */}
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;

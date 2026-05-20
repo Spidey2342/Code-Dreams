@@ -1,0 +1,182 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: #0A0A0F;
+  color: #F8FAFC;
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0A0A0F; }
+::-webkit-scrollbar-thumb { background: #2d2d3d; border-radius: 3px; }
+
+/* ── Animations ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+@keyframes chipIn {
+  from { opacity: 0; transform: translateX(16px) scale(0.9); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes menuDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.aFadeUp     { animation: fadeUp     0.6s ease both; }
+.aSlideUp    { animation: slideUp    0.6s ease both; }
+.aSlideRight { animation: slideRight 0.7s ease both; }
+.aFloat      { animation: float 4s ease-in-out infinite; }
+.aChip1      { animation: chipIn 0.5s ease 1.2s both; }
+.aChip2      { animation: chipIn 0.5s ease 1.6s both; }
+.aMenu       { animation: menuDown 0.2s ease both; }
+
+/* ── Text ── */
+.gradText {
+  background: linear-gradient(135deg, #a78bfa 0%, #f59e0b 60%, #f97316 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Nav ── */
+.navBlur {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.navLink {
+  color: #94A3B8;
+  text-decoration: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  transition: color .2s;
+}
+.navLink:hover { color: #F8FAFC; }
+
+/* ── Buttons ── */
+.btnP { transition: background .2s, box-shadow .2s, transform .1s; }
+.btnP:hover { background: #818CF8 !important; box-shadow: 0 0 24px rgba(99,102,241,.45); }
+.btnP:active { transform: scale(.97); }
+
+.btnG { transition: border-color .2s, background .2s; }
+.btnG:hover { border-color: rgba(255,255,255,.35) !important; background: rgba(255,255,255,.06) !important; }
+
+/* ── Cards ── */
+.stepCard { transition: border-color .2s, background .2s, transform .2s; }
+.stepCard:hover { border-color: #a78bfa !important; background: rgba(99,102,241,.06) !important; transform: translateY(-3px); }
+
+.trackCard { transition: transform .25s, box-shadow .25s; }
+.trackCard:hover { transform: translateY(-6px); box-shadow: 0 20px 50px rgba(0,0,0,.6); }
+
+/* ── Footer ── */
+.fLink {
+  display: block;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: #94A3B8;
+  text-decoration: none;
+  margin-bottom: 12px;
+  transition: color .2s;
+}
+.fLink:hover { color: #F8FAFC; }
+
+.socBtn {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.08);
+  color: #94A3B8; font-size: 11px; font-weight: 700;
+  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  transition: background .2s, border-color .2s, color .2s;
+}
+.socBtn:hover { background: rgba(255,255,255,.1) !important; color: #F8FAFC; }
+
+/* ── Layout helpers ── */
+.heroGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+.heroCodeCol { display: flex; justify-content: flex-end; }
+
+.stepsGrid  { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; }
+.tracksGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+.footerGrid   { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 48px; margin-bottom: 64px; }
+.footerBottom { display: flex; justify-content: space-between; align-items: center; }
+
+/* ── Spacing ── */
+.pHero   { padding: 100px 48px 120px; }
+.pSec    { padding: 96px 48px; }
+.pNav    { padding: 0 48px; }
+.pFooter { padding: 64px 48px 32px; }
+
+/* ── Type scale ── */
+.h1Size { font-size: 68px; }
+.h2Size { font-size: 40px; }
+
+/* ── Desktop nav visibility ── */
+.deskLinks { display: flex; }
+.deskAuth  { display: flex; }
+.burger    { display: none; }
+
+/* ── Tablet (768px – 1023px) ── */
+@media (max-width: 1023px) {
+  .heroGrid { grid-template-columns: 1fr; gap: 48px; text-align: center; }
+  .heroCodeCol { justify-content: center; }
+  .heroCta, .heroSocial { justify-content: center !important; }
+  .heroBadge { display: flex; justify-content: center; }
+  .heroBody  { margin-left: auto; margin-right: auto; }
+
+  .stepsGrid  { grid-template-columns: 1fr; gap: 14px; }
+  .tracksGrid { grid-template-columns: 1fr; gap: 14px; }
+  .footerGrid { grid-template-columns: 1fr 1fr; gap: 32px; }
+  .footerBrand { grid-column: 1 / -1; }
+
+  .h1Size  { font-size: 50px; }
+  .h2Size  { font-size: 34px; }
+  .pHero   { padding: 72px 32px 80px; }
+  .pSec    { padding: 72px 32px; }
+  .pNav    { padding: 0 32px; }
+  .pFooter { padding: 56px 32px 28px; }
+}
+
+/* ── Mobile (< 768px) ── */
+@media (max-width: 767px) {
+  .deskLinks { display: none !important; }
+  .deskAuth  { display: none !important; }
+  .burger    { display: flex !important; }
+
+  .heroGrid   { gap: 36px; }
+  .stepsGrid  { grid-template-columns: 1fr; gap: 12px; }
+  .tracksGrid { grid-template-columns: 1fr; gap: 12px; }
+  .footerGrid { grid-template-columns: 1fr; gap: 28px; margin-bottom: 40px; }
+  .footerBrand { grid-column: auto; }
+  .footerBottom { flex-direction: column; gap: 14px; text-align: center; }
+
+  .h1Size  { font-size: 36px; letter-spacing: -1px !important; }
+  .h2Size  { font-size: 26px; }
+  .pHero   { padding: 48px 20px 64px; }
+  .pSec    { padding: 56px 20px; }
+  .pNav    { padding: 0 20px; }
+  .pFooter { padding: 48px 20px 24px; }
+}
+
+/* ── Wide (> 1280px) ── */
+@media (min-width: 1281px) {
+  .h1Size { font-size: 76px; }
+}
