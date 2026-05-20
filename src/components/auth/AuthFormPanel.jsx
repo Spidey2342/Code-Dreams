@@ -1,5 +1,5 @@
 import { useState } from "react";
-
+import { Moon,Settings } from "lucide-react";
 function InputField({ label, type = "text", placeholder, icon, rightEl }) {
   const [focused, setFocused] = useState(false);
 
@@ -86,7 +86,7 @@ export default function AuthFormPanel({ variant = "login" }) {
 
       {/* Top right icons */}
       <div style={{ position: "absolute", top: 24, right: 24, display: "flex", gap: 8 }}>
-        {["🌙", "⚙️"].map((ic) => (
+        {[<Moon/>, <Settings/>].map((ic) => (
           <button key={ic} style={{
             width: 36, height: 36, borderRadius: 8,
             background: "rgba(255,255,255,0.05)",
