@@ -1,20 +1,21 @@
 import { useState } from "react";
 import { Moon, Settings, Mail, Lock, Eye, EyeOff, User } from "lucide-react";
+import { useWidth } from "../../hooks/useWidth";
 import googleImg from "../../assets/search.png";
 import githubImg from "../../assets/github.png";
 
-/* ── Reusable input field ── */
+/* ── Input field ── */
 function InputField({ label, type = "text", placeholder, icon, rightEl }) {
   const [focused, setFocused] = useState(false);
 
   return (
-    <div style={{ marginBottom: 20 }}>
+    <div style={{ marginBottom: 18 }}>
       {label && (
         <label style={{
           display: "block",
           fontFamily: "'Space Grotesk'", fontWeight: 600,
           fontSize: 12, letterSpacing: "0.1em", textTransform: "uppercase",
-          color: "#94A3B8", marginBottom: 8,
+          color: "#94A3B8", marginBottom: 7,
         }}>
           {label}
         </label>
@@ -26,8 +27,7 @@ function InputField({ label, type = "text", placeholder, icon, rightEl }) {
         borderRadius: 8,
         boxShadow: focused ? "0 0 0 3px rgba(99,102,241,0.15)" : "none",
         transition: "border-color 0.2s, box-shadow 0.2s",
-        padding: "0 14px",
-        gap: 10,
+        padding: "0 14px", gap: 10,
       }}>
         {icon && (
           <span style={{ color: "#475569", display: "flex", alignItems: "center", flexShrink: 0 }}>
@@ -42,7 +42,7 @@ function InputField({ label, type = "text", placeholder, icon, rightEl }) {
           style={{
             flex: 1, background: "transparent", border: "none", outline: "none",
             fontFamily: "'DM Sans'", fontSize: 14, color: "#F8FAFC",
-            padding: "13px 0",
+            padding: "12px 0",
           }}
         />
         {rightEl && (
@@ -55,7 +55,7 @@ function InputField({ label, type = "text", placeholder, icon, rightEl }) {
   );
 }
 
-/* ── OAuth button with real brand image ── */
+/* ── OAuth button ── */
 function OAuthButton({ imgSrc, label }) {
   const [hovered, setHovered] = useState(false);
   return (
@@ -66,7 +66,7 @@ function OAuthButton({ imgSrc, label }) {
         flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
         background: hovered ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.04)",
         border: `1px solid ${hovered ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.1)"}`,
-        borderRadius: 8, padding: "13px 20px", cursor: "pointer",
+        borderRadius: 8, padding: "12px 16px", cursor: "pointer",
         fontFamily: "'Space Grotesk'", fontWeight: 600,
         fontSize: 13, letterSpacing: "0.08em", color: "#F8FAFC",
         transition: "background 0.2s, border-color 0.2s",
@@ -78,7 +78,7 @@ function OAuthButton({ imgSrc, label }) {
   );
 }
 
-/* ── Custom checkbox ── */
+/* ── Checkbox ── */
 function Checkbox({ checked, onChange, children }) {
   return (
     <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
@@ -102,96 +102,97 @@ function Checkbox({ checked, onChange, children }) {
   );
 }
 
-/* ── Main form panel ── */
+/* ── Main panel ── */
 export default function AuthFormPanel({ variant = "login" }) {
-  const [showPass, setShowPass]   = useState(false);
-  const [remember, setRemember]   = useState(false);
-  const [agree, setAgree]         = useState(false);
+  const [showPass, setShowPass] = useState(false);
+  const [remember, setRemember] = useState(false);
+  const [agree, setAgree]       = useState(false);
 
+  const w       = useWidth();
+  const mob     = w < 768;
   const isLogin = variant === "login";
 
   return (
     <div style={{
-      width: "50%", minHeight: "100vh",
+      /* Full width on mobile, 50/55% on tablet/desktop */
+      width: mob ? "100%" : w >= 1024 ? "50%" : "55%",
+      minHeight: "100vh",
       background: "#0F0F1A",
-      padding: "40px 64px",
+      /* Tighter padding on mobile */
+      padding: mob ? "32px 24px" : w >= 1024 ? "40px 64px" : "40px 40px",
       display: "flex", flexDirection: "column", justifyContent: "center",
       position: "relative",
     }}>
 
-      {/* Top right — lucide icons */}
-      <div style={{ position: "absolute", top: 24, right: 24, display: "flex", gap: 8 }}>
-        {[<Moon size={16} />, <Settings size={16} />].map((ic, i) => (
+      {/* Mobile-only logo */}
+      {mob && (
+        <div style={{ marginBottom: 36 }}>
+          <Logo />
+        </div>
+      )}
+
+      {/* Top right icons */}
+      <div style={{ position: "absolute", top: 20, right: 20, display: "flex", gap: 8 }}>
+        {[<Moon size={15} />, <Settings size={15} />].map((ic, i) => (
           <button key={i} style={{
-            width: 36, height: 36, borderRadius: 8,
+            width: 34, height: 34, borderRadius: 8,
             background: "rgba(255,255,255,0.05)",
             border: "1px solid rgba(255,255,255,0.08)",
             cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center",
-            color: "#94A3B8",
-            transition: "background 0.2s, color 0.2s",
+            color: "#94A3B8", transition: "background 0.2s",
           }}>
             {ic}
           </button>
         ))}
       </div>
 
-      <div style={{ maxWidth: 440, width: "100%" }}>
+      {/* Form container — centered with max width */}
+      <div style={{ maxWidth: 440, width: "100%", margin: mob ? "0 auto" : "0" }}>
 
         {/* Heading */}
         <h1 style={{
           fontFamily: "'Space Grotesk'", fontWeight: 700,
-          fontSize: 40, color: "#F8FAFC",
-          marginBottom: 8, letterSpacing: "-1px",
+          fontSize: mob ? 30 : 38,
+          color: "#F8FAFC", marginBottom: 8, letterSpacing: "-1px",
         }}>
           {isLogin ? "Welcome Back" : "Start Your Path"}
         </h1>
         <p style={{
           fontFamily: "'DM Sans'", fontSize: 15,
-          color: "#94A3B8", marginBottom: 36,
+          color: "#94A3B8", marginBottom: 28,
         }}>
           {isLogin
             ? "Enter your credentials to access your terminal."
             : "Create your account and begin your journey today."}
         </p>
 
-        {/* OAuth buttons — real brand images */}
-        <div style={{ display: "flex", gap: 12, marginBottom: 28 }}>
+        {/* OAuth buttons */}
+        <div style={{ display: "flex", gap: 12, marginBottom: 24 }}>
           <OAuthButton imgSrc={githubImg} label="GITHUB" />
           <OAuthButton imgSrc={googleImg} label="GOOGLE" />
         </div>
 
         {/* Divider */}
-        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 28 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 24 }}>
           <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
-          <span style={{
-            fontFamily: "'JetBrains Mono'", fontSize: 11,
-            color: "#475569", letterSpacing: "0.1em",
-          }}>
+          <span style={{ fontFamily: "'JetBrains Mono'", fontSize: 11, color: "#475569", letterSpacing: "0.1em" }}>
             OR CONTINUE WITH
           </span>
           <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
         </div>
 
-        {/* Name field — signup only */}
+        {/* Name — signup only */}
         {!isLogin && (
-          <InputField
-            label="FULL NAME"
-            placeholder="John Doe"
-            icon={<User size={15} />}
-          />
+          <InputField label="FULL NAME" placeholder="John Doe" icon={<User size={15} />} />
         )}
 
         {/* Email */}
-        <InputField
-          label="EMAIL ADDRESS"
-          placeholder="dev@codepath.com"
-          icon={<Mail size={15} />}
-        />
+        <InputField label="EMAIL ADDRESS" placeholder="dev@codepath.com" icon={<Mail size={15} />} />
 
         {/* Password */}
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+        <div style={{ marginBottom: 18 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 7 }}>
             <label style={{
               fontFamily: "'Space Grotesk'", fontWeight: 600,
               fontSize: 12, letterSpacing: "0.1em", textTransform: "uppercase",
@@ -233,7 +234,7 @@ export default function AuthFormPanel({ variant = "login" }) {
         )}
 
         {/* Checkbox */}
-        <div style={{ marginBottom: 28 }}>
+        <div style={{ marginBottom: 24 }}>
           {isLogin ? (
             <Checkbox checked={remember} onChange={() => setRemember((r) => !r)}>
               Remember this device for 30 days
@@ -252,18 +253,18 @@ export default function AuthFormPanel({ variant = "login" }) {
         <button
           className="btnP"
           style={{
-            width: "100%", padding: "15px",
+            width: "100%", padding: "14px",
             background: "#6366F1", color: "#fff",
             border: "none", borderRadius: 8, cursor: "pointer",
             fontFamily: "'Space Grotesk'", fontWeight: 600,
             fontSize: 14, letterSpacing: "0.1em", textTransform: "uppercase",
-            marginBottom: 24,
+            marginBottom: 20,
           }}
         >
           {isLogin ? "INITIALIZE SESSION ›" : "BEGIN YOUR PATH ›"}
         </button>
 
-        {/* Switch page link */}
+        {/* Switch page */}
         <p style={{ textAlign: "center", fontFamily: "'DM Sans'", fontSize: 14, color: "#94A3B8" }}>
           {isLogin ? "New to the path? " : "Already on the path? "}
           <a
@@ -274,8 +275,8 @@ export default function AuthFormPanel({ variant = "login" }) {
           </a>
         </p>
 
-        {/* Bottom links */}
-        <div style={{ display: "flex", justifyContent: "center", gap: 24, marginTop: 32 }}>
+        {/* Footer links */}
+        <div style={{ display: "flex", justifyContent: "center", gap: 24, marginTop: 28 }}>
           {["SUPPORT", "PRIVACY", "TERMS"].map((l) => (
             <a key={l} href="#" style={{
               fontFamily: "'DM Sans'", fontSize: 12,
@@ -291,6 +292,23 @@ export default function AuthFormPanel({ variant = "login" }) {
         </div>
 
       </div>
+    </div>
+  );
+}
+
+/* ── Inline Logo for mobile (avoids circular import) ── */
+function Logo() {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <div style={{
+        width: 34, height: 34, borderRadius: 8, background: "#6366F1",
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
+        <span style={{ color: "#fff", fontFamily: "'JetBrains Mono'", fontSize: 12, fontWeight: 500 }}>&lt;/&gt;</span>
+      </div>
+      <span style={{ fontFamily: "'Space Grotesk'", fontWeight: 700, fontSize: 15, letterSpacing: "0.08em", color: "#F8FAFC" }}>
+        CODEPATH
+      </span>
     </div>
   );
 }
