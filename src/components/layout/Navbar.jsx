@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { useWidth } from "../../hooks/useWidth";
 import Logo from "../ui/Logo";
+import { useNavigate } from "react-router-dom";
 
 export default function Navbar() {
+const navigate = useNavigate()
+
   const [open, setOpen] = useState(false);
   const w = useWidth();
   const mob = w < 768;
@@ -31,9 +34,10 @@ export default function Navbar() {
 
           {/* Desktop auth */}
           <div className="deskAuth" style={{ alignItems: "center", gap: 12 }}>
-            <a href="/login" className="navLink">Log In</a>
+            <p onClick={()=> navigate("/login")} className="navLink">Log In</p>
             <button
               className="btnP"
+              onClick={()=> navigate("/signup")}
               style={{
                 background: "#6366F1", color: "#fff", border: "none", borderRadius: 8,
                 padding: "10px 22px", cursor: "pointer",
