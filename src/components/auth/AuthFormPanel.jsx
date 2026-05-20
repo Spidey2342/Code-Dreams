@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Moon, Settings, Mail, Lock, Eye, EyeOff, User } from "lucide-react";
-import googleImg from "../../assets/google.png";
+import googleImg from "../../assets/search.png";
 import githubImg from "../../assets/github.png";
 
 /* ── Reusable input field ── */
