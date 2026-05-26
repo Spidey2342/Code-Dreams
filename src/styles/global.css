@@ -134,6 +134,10 @@ body {
 .deskAuth  { display: flex; }
 .burger    { display: none; }
 
+img, svg { max-width: 100%; display: block; }
+p.navLink { cursor: pointer; }
+.gradText { color: #a78bfa; } /* fallback before gradient rule */
+
 /* ── Tablet (768px – 1023px) ── */
 @media (max-width: 1023px) {
   .heroGrid { grid-template-columns: 1fr; gap: 48px; text-align: center; }
@@ -141,6 +145,7 @@ body {
   .heroCta, .heroSocial { justify-content: center !important; }
   .heroBadge { display: flex; justify-content: center; }
   .heroBody  { margin-left: auto; margin-right: auto; }
+   .heroCodeCol { display: none; } 
 
   .stepsGrid  { grid-template-columns: 1fr; gap: 14px; }
   .tracksGrid { grid-template-columns: 1fr; gap: 14px; }
@@ -160,10 +165,11 @@ body {
   .deskLinks { display: none !important; }
   .deskAuth  { display: none !important; }
   .burger    { display: flex !important; }
+   .heroCodeCol { display: none; } 
 
   .heroGrid   { gap: 36px; }
-  .stepsGrid  { grid-template-columns: 1fr; gap: 12px; }
-  .tracksGrid { grid-template-columns: 1fr; gap: 12px; }
+  .stepsGrid  { display: grid; grid-template-columns: repeat(3, minmax(200px, 1fr)); gap: 24px; }
+.tracksGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
   .footerGrid { grid-template-columns: 1fr; gap: 28px; margin-bottom: 40px; }
   .footerBrand { grid-column: auto; }
   .footerBottom { flex-direction: column; gap: 14px; text-align: center; }
