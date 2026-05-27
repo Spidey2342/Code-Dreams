@@ -1,17 +1,78 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
+import Dashboard from "./pages/Dashboard";
+import TrackPage from "./pages/TrackPage";
+import LessonPage from "./pages/LessonPage";
+import SubmitPage from "./pages/SubmitPage";
+import CertificatePage from "./pages/CertificatePage";
+import VerifyPage from "./pages/VerifyPage";
+import PricingPage from "./pages/PricingPage";
+import { ProtectedRoute, PublicRoute } from "./components/ui/ProtectedRoute";
+
+function PaymentSuccess() {
+  const navigate = useNavigate();
+  const [verifying, setVerifying] = useState(true);
+
+  useEffect(() => {
+    const ref = new URLSearchParams(window.location.search).get("reference") ||
+                new URLSearchParams(window.location.search).get("trxref");
+    if (ref) {
+      const token = localStorage.getItem("codepath_token");
+      fetch(`${import.meta.env.VITE_API_URL || "http://localhost:3001"}/api/payments/verify/${ref}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }).finally(() => setVerifying(false));
+    } else {
+      setVerifying(false);
+    }
+  }, []);
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#0A0A0F", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ textAlign: "center" }}>
+        <p style={{ fontSize: 56, marginBottom: 16 }}>{verifying ? "⏳" : "🎉"}</p>
+        <h2 style={{ fontFamily: "'Space Grotesk'", fontWeight: 700, fontSize: 24, color: "#F8FAFC", marginBottom: 8 }}>
+          {verifying ? "Verifying payment..." : "You're now Pro!"}
+        </h2>
+        <p style={{ fontFamily: "'DM Sans'", fontSize: 14, color: "#94A3B8", marginBottom: 24 }}>
+          {verifying ? "Please wait" : "Welcome to CodePath Pro. All tracks unlocked."}
+        </p>
+        {!verifying && (
+          <button onClick={() => navigate("/dashboard")} style={{
+            background: "#6366F1", color: "#fff", border: "none",
+            borderRadius: 8, padding: "12px 24px", cursor: "pointer",
+            fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 13,
+          }}>
+            Go to Dashboard →
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/"       element={<HomePage />} />
-        <Route path="/login"  element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        {/* Add new pages here as you build them:             */}
-        {/* <Route path="/dashboard" element={<Dashboard />} /> */}
+        {/* Public pages */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/verify/:code" element={<VerifyPage />} />
+        <Route path="/payment/success" element={<PaymentSuccess />} />
+
+        {/* Auth pages — redirect to dashboard if logged in */}
+        <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+        <Route path="/signup" element={<PublicRoute><SignupPage /></PublicRoute>} />
+
+        {/* Protected pages — redirect to login if not logged in */}
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/track" element={<ProtectedRoute><TrackPage /></ProtectedRoute>} />
+        <Route path="/lessons" element={<ProtectedRoute><LessonPage /></ProtectedRoute>} />
+        <Route path="/submit" element={<ProtectedRoute><SubmitPage /></ProtectedRoute>} />
+        <Route path="/certificates" element={<ProtectedRoute><CertificatePage /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );

@@ -4,7 +4,7 @@ function getToken() {
   return localStorage.getItem("codepath_token");
 }
 
-async function request(path: string, options: RequestInit = {}) {
+async function request(path, options = {}) {
   const token = getToken();
 
   const res = await fetch(`${BASE_URL}${path}`, {
@@ -17,22 +17,26 @@ async function request(path: string, options: RequestInit = {}) {
   });
 
   const data = await res.json();
-
   if (!res.ok) throw new Error(data.error || "Something went wrong");
-
   return data;
 }
 
 export const api = {
   auth: {
-    register: (body: { name: string; email: string; password: string }) =>
+    register: (body) =>
       request("/api/auth/register", { method: "POST", body: JSON.stringify(body) }),
-
-    login: (body: { email: string; password: string }) =>
+    login: (body) =>
       request("/api/auth/login", { method: "POST", body: JSON.stringify(body) }),
   },
-
-  user: {
-    me: () => request("/api/user/me"),
+user: {
+  me: () => request("/api/user/me"),
+  leaderboard: () => request("/api/user/leaderboard"),
+},
+  tracks: {
+    getLessons: (slug) => request(`/api/tracks/${slug}/lessons`),
+    getLesson: (slug, id) => request(`/api/tracks/${slug}/lessons/${id}`),
+    completeLesson: (slug, id) =>
+      request(`/api/tracks/${slug}/lessons/${id}/complete`, { method: "POST" }),
   },
 };
+

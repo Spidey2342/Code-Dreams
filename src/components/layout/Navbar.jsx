@@ -27,8 +27,8 @@ const navigate = useNavigate()
 
           {/* Desktop links */}
           <div className="deskLinks" style={{ gap: 36 }}>
-            {["Tracks", "Features", "Community"].map((l) => (
-              <a key={l} href="#" className="navLink">{l}</a>
+            {["Tracks", "Features", "Pricing"].map((l) => (
+              <a key={l} href={l === "Pricing" ? "/pricing" : "#"} className="navLink">{l}</a>
             ))}
           </div>
 
@@ -86,9 +86,8 @@ const navigate = useNavigate()
               display: "flex", flexDirection: "column", gap: 4,
             }}
           >
-            {["Tracks", "Features", "Community"].map((l) => (
-              <a
-                key={l} href="#" className="navLink"
+          {["Tracks", "Features", "Pricing"].map((l) => (
+              <a key={l} href={l === "Pricing" ? "/pricing" : "#"} className="navLink"
                 style={{ padding: "12px 0", fontSize: 15, borderBottom: "1px solid rgba(255,255,255,.04)" }}
               >
                 {l}

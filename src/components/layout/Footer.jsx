@@ -34,8 +34,8 @@ export default function Footer() {
             <p style={{ fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 12, letterSpacing: "0.08em", textTransform: "uppercase", color: "#F8FAFC", marginBottom: 18 }}>
               COMPANY
             </p>
-            {["About Us", "Careers", "Blog", "Contact"].map((l) => (
-              <a key={l} href="#" className="fLink">{l}</a>
+            {["About Us", "Careers", "Blog", "Contact", "Pricing"].map((l) => (
+              <a key={l} href={l === "Pricing" ? "/pricing" : "#"} className="navLink">{l}</a>  
             ))}
           </div>
         </div>

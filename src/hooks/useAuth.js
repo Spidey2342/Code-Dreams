@@ -1,17 +1,8 @@
 import { useState, useEffect } from "react";
 import { api } from "../lib/api";
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  isPro: boolean;
-  totalXP: number;
-  currentStreak: number;
-}
-
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,14 +15,14 @@ export function useAuth() {
       .finally(() => setLoading(false));
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email, password) => {
     const data = await api.auth.login({ email, password });
     localStorage.setItem("codepath_token", data.token);
     setUser(data.user);
     return data;
   };
 
-  const register = async (name: string, email: string, password: string) => {
+  const register = async (name, email, password) => {
     const data = await api.auth.register({ name, email, password });
     localStorage.setItem("codepath_token", data.token);
     setUser(data.user);
