@@ -201,24 +201,26 @@ export default function LessonPage() {
         <div style={{ flex: 1 }} />
 
         {/* Hearts */}
-        <div style={{
-          display: "flex", alignItems: "center", gap: 6,
-          background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.08)",
-          borderRadius: 20, padding: "4px 12px",
-        }}>
-          {[0, 1, 2].map((i) => (
-            <span key={i} style={{ fontSize: 13, opacity: i < hearts ? 1 : 0.2 }}>❤️</span>
-          ))}
-          <span style={{ fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 11, color: "#94A3B8", marginLeft: 4 }}>
-            {hearts} LIVES LEFT
-          </span>
-        </div>
+<div style={{
+  display: "flex", alignItems: "center", gap: 4,
+  background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.08)",
+  borderRadius: 20, padding: "4px 10px",
+}}>
+  {[0, 1, 2].map((i) => (
+    <span key={i} style={{ fontSize: 12, opacity: i < hearts ? 1 : 0.2 }}>❤️</span>
+  ))}
+  {!mob && (
+    <span style={{ fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 11, color: "#94A3B8", marginLeft: 4 }}>
+      {hearts} LIVES LEFT
+    </span>
+  )}
+</div>
 
-        {/* Session XP */}
-        <div style={{ display: "flex", alignItems: "center", gap: 5, fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 12, color: "#10B981" }}>
-          <span>⭐</span>
-          <span>SESSION XP +{sessionXP}</span>
-        </div>
+{/* Session XP */}
+<div style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: mob ? 11 : 12, color: "#10B981" }}>
+  <span>⭐</span>
+  <span>+{sessionXP}{!mob && " XP"}</span>
+</div>
 
         {/* Avatar */}
         <div style={{
