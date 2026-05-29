@@ -1,10 +1,10 @@
 import TrackCard from "./TrackCard";
 
 const TRACKS = [
-  { name: "HTML/CSS Foundation",    icon: "🌐", color: "#E34F26", difficulty: "Beginner",     weeks: "6 Weeks",  xp: "2500", desc: "Master the building blocks of the web. Learn semantic markup and modern styling techniques." },
-  { name: "JavaScript Mastery",     icon: "⚡", color: "#F7DF1E", difficulty: "Intermediate", weeks: "8 Weeks",  xp: "5000", desc: "Deep dive into vanilla JS, DOM manipulation, asynchronous programming, and modern ES6+ syntax." },
-  { name: "Python for Data",        icon: "🐍", color: "#3776AB", difficulty: "Beginner",     weeks: "6 Weeks",  xp: "4000", desc: "Learn Python fundamentals and explore data manipulation using Pandas, NumPy, and basic visualization." },
-  { name: "Full Stack Engineering", icon: "🗂️", color: "#10B981", difficulty: "Advanced",     weeks: "12 Weeks", xp: "8500", desc: "Build complete web applications combining React frontend with Node.js/Express backend and databases." },
+  { name: "HTML & CSS Foundation", icon: "🌐", color: "#E34F26", difficulty: "Beginner", weeks: "4 Weeks", xp: "2500", desc: "Master the building blocks of the web. Learn semantic markup and modern styling techniques.", slug: "html-css" },
+  { name: "Python Fundamentals", icon: "🐍", color: "#3776AB", difficulty: "Beginner", weeks: "6 Weeks", xp: "4000", desc: "Learn Python from scratch. Build real projects with Ghanaian context — calculators, grade trackers, automation scripts.", slug: "python-fundamentals" },
+  { name: "JavaScript Mastery", icon: "⚡", color: "#F7DF1E", difficulty: "Intermediate", weeks: "8 Weeks", xp: "5000", desc: "Deep dive into vanilla JS, DOM manipulation, asynchronous programming, and modern ES6+ syntax.", slug: "javascript" },
+  { name: "Full Stack Engineering", icon: "🗂️", color: "#10B981", difficulty: "Advanced", weeks: "12 Weeks", xp: "8500", desc: "Build complete web applications combining React frontend with Python Flask backend and databases.", slug: "fullstack" },
 ];
 
 export default function LearningTracks() {

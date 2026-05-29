@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useWidth } from "../hooks/useWidth";
 import { api } from "../lib/api";
 import Logo from "../components/ui/Logo";
+
+
 
 export default function TrackPage() {
   const { user, loading } = useAuth();
@@ -14,6 +16,8 @@ export default function TrackPage() {
   const [track, setTrack] = useState(null);
   const [lessons, setLessons] = useState([]);
   const [loadingTrack, setLoadingTrack] = useState(true);
+  const [searchParams] = useSearchParams();
+const trackSlug = searchParams.get("slug") || "html-css";
 
   useEffect(() => {
     if (!loading && !user) navigate("/login");
@@ -22,7 +26,7 @@ export default function TrackPage() {
   useEffect(() => {
     const fetch = async () => {
       try {
-        const data = await api.tracks.getLessons("html-css");
+       const data = await api.tracks.getLessons(trackSlug);
         setTrack(data.track);
         setLessons(data.lessons);
       } catch (err) {
@@ -91,7 +95,7 @@ export default function TrackPage() {
         textAlign: "center",
       }}>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-          <span style={{ fontSize: 28 }}>🌐</span>
+        <span style={{ fontSize: 28 }}>{track?.icon || "📚"}</span>
           <span style={{
             fontFamily: "'DM Sans'", fontSize: 11, fontWeight: 600,
             letterSpacing: ".1em", color: "#6366F1", textTransform: "uppercase",
@@ -104,11 +108,11 @@ export default function TrackPage() {
           fontSize: mob ? 26 : 36, color: "#F8FAFC",
           letterSpacing: "-1px", marginBottom: 8,
         }}>
-          HTML & CSS Foundation
+         {track?.name || "Loading..."}
         </h1>
         <p style={{ fontFamily: "'DM Sans'", fontSize: 14, color: "#94A3B8", marginBottom: 24 }}>
-          Master the building blocks of the web
-        </p>
+  {track?.description || ""}
+</p>
 
         {/* Progress bar */}
         <div style={{ maxWidth: 400, margin: "0 auto 16px" }}>
@@ -127,7 +131,7 @@ export default function TrackPage() {
         </div>
 
         <button
-          onClick={() => navigate(`/lessons?track=html-css${currentLesson ? `&id=${currentLesson.id}` : ""}`)}
+   onClick={() => navigate(`/lessons?track=${trackSlug}${currentLesson ? `&id=${currentLesson.id}` : ""}`)}
           style={{
             background: "#6366F1", color: "#fff", border: "none",
             borderRadius: 8, padding: "12px 28px", cursor: "pointer",
@@ -164,7 +168,7 @@ export default function TrackPage() {
                   return (
                     <div
                       key={lesson.id}
-                      onClick={() => navigate(`/lessons?track=html-css&id=${lesson.id}`)}
+                      onClick={() => navigate(`/lessons?track=${trackSlug}&id=${lesson.id}`)}
                       style={{
                         flex: mob ? "none" : 1,
                         width: mob ? "100%" : "auto",
@@ -298,12 +302,12 @@ export default function TrackPage() {
           textAlign: "center", marginTop: 8,
         }}>
           <span style={{ fontSize: 32, display: "block", marginBottom: 8 }}>🎓</span>
-          <p style={{ fontFamily: "'Space Grotesk'", fontWeight: 700, fontSize: 16, color: "#a78bfa", marginBottom: 4 }}>
-            HTML & CSS Certificate
-          </p>
-          <p style={{ fontFamily: "'DM Sans'", fontSize: 13, color: "#475569" }}>
-            Complete all 10 lessons and submit your project to earn your certificate
-          </p>
+         <p style={{ fontFamily: "'Space Grotesk'", fontWeight: 700, fontSize: 16, color: "#a78bfa", marginBottom: 4 }}>
+  {track?.name} Certificate
+</p>
+<p style={{ fontFamily: "'DM Sans'", fontSize: 13, color: "#475569" }}>
+  Complete all {lessons.length} lessons and submit your project to earn your certificate
+</p>
         </div>
 
       </div>
