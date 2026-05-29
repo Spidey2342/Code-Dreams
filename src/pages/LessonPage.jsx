@@ -163,14 +163,27 @@ export default function LessonPage() {
     <div style={{ height: "100vh", background: "#0A0A0F", display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
       {/* ── Top bar ── */}
-      <div style={{
-        height: 48, background: "#0F0F1A",
-        borderBottom: "1px solid rgba(255,255,255,.06)",
-        display: "flex", alignItems: "center",
-        padding: "0 16px", gap: 12, flexShrink: 0,
-      }}>
-        {/* Left — track name */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+<div style={{
+  height: 48, background: "#0F0F1A",
+  borderBottom: "1px solid rgba(255,255,255,.06)",
+  display: "flex", alignItems: "center",
+  padding: "0 16px", gap: 12, flexShrink: 0,
+}}>
+  {/* Back button */}
+  <button
+    onClick={() => navigate("/dashboard")}
+    style={{
+      background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.1)",
+      borderRadius: 8, padding: "5px 10px", cursor: "pointer",
+      fontFamily: "'DM Sans'", fontSize: 11, color: "#94A3B8",
+      display: "flex", alignItems: "center", gap: 4, flexShrink: 0,
+    }}
+  >
+    ← {!mob && "Dashboard"}
+  </button>
+
+  {/* Left — track name */}
+  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{
             width: 28, height: 28, borderRadius: 6, background: "#6366F1",
             display: "flex", alignItems: "center", justifyContent: "center",
