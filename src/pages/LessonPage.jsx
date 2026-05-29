@@ -567,16 +567,22 @@ export default function LessonPage() {
             <span style={{ fontSize: 11, color: "#999", letterSpacing: ".06em", textTransform: "uppercase", fontFamily: "sans-serif" }}>
               Live Preview
             </span>
-            <button
-              onClick={() => setShowPreview(false)}
-              style={{
-                background: "#ef4444", color: "#fff", border: "none",
-                borderRadius: 6, padding: "4px 12px", cursor: "pointer",
-                fontFamily: "sans-serif", fontSize: 12, fontWeight: 600,
-              }}
-            >
-              ✕ Close
-            </button>
+          {mob ? (
+  <button
+    onClick={() => setShowPreview(false)}
+    style={{
+      background: "#ef4444", color: "#fff", border: "none",
+      borderRadius: 6, padding: "4px 12px", cursor: "pointer",
+      fontFamily: "sans-serif", fontSize: 12, fontWeight: 600,
+    }}
+  >
+    ✕ Close
+  </button>
+) : (
+  <span style={{ fontSize: 11, color: "#999", fontFamily: "sans-serif" }}>
+    Click RUN to update
+  </span>
+)}
           </div>
           <iframe
             srcDoc={preview || `<html><body style="font-family:sans-serif;padding:16px;color:#666;display:flex;align-items:center;justify-content:center;height:80vh;margin:0;flex-direction:column;gap:8px"><p style="font-size:13px">Your output will appear here</p></body></html>`}
