@@ -472,103 +472,145 @@ export default function LessonPage() {
           </div>
         )}
 
-        {/* ── Center — code editor ── */}
-        {(!mob || tab === "code") && (
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, background: "#0A0A0F" }}>
+  {/* ── Center — code editor ── */}
+{(!mob || tab === "code") && (
+  <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, background: "#0A0A0F" }}>
 
-            {/* Editor toolbar */}
-            <div style={{
-              height: 40, background: "#161B22",
-              borderBottom: "1px solid rgba(255,255,255,.06)",
-              display: "flex", alignItems: "center",
-              padding: "0 12px", gap: 10, flexShrink: 0,
-            }}>
-              <div style={{
-                display: "flex", alignItems: "center", gap: 6,
-                background: "#0F0F1A", border: "1px solid rgba(255,255,255,.1)",
-                borderRadius: "6px 6px 0 0", padding: "4px 10px",
-                fontFamily: "'JetBrains Mono'", fontSize: 11, color: "#94A3B8",
-              }}>
-                <span style={{ fontSize: 10 }}>📄</span>
-                {lesson.order <= 5 ? "index.html" : "styles.css"}
-              </div>
-              <div style={{ flex: 1 }} />
-              <div style={{ display: "flex", alignItems: "center", gap: 5, fontFamily: "'DM Sans'", fontSize: 11, color: "#10B981" }}>
-                <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#10B981" }} />
-                Autosaved
-              </div>
-              {!mob && (
-                <span style={{ fontFamily: "'DM Sans'", fontSize: 11, color: "#475569", letterSpacing: ".06em" }}>
-                  PREVIEW
-                </span>
-              )}
-            </div>
+    {/* Editor toolbar */}
+    <div style={{
+      height: 40, background: "#161B22",
+      borderBottom: "1px solid rgba(255,255,255,.06)",
+      display: "flex", alignItems: "center",
+      padding: "0 12px", gap: 10, flexShrink: 0,
+    }}>
+      <div style={{
+        display: "flex", alignItems: "center", gap: 6,
+        background: "#0F0F1A", border: "1px solid rgba(255,255,255,.1)",
+        borderRadius: "6px 6px 0 0", padding: "4px 10px",
+        fontFamily: "'JetBrains Mono'", fontSize: 11, color: "#94A3B8",
+      }}>
+        <span style={{ fontSize: 10 }}>📄</span>
+        {lesson.order <= 5 ? "index.html" : "styles.css"}
+      </div>
+      <div style={{ flex: 1 }} />
+      <div style={{ display: "flex", alignItems: "center", gap: 5, fontFamily: "'DM Sans'", fontSize: 11, color: "#10B981" }}>
+        <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#10B981" }} />
+        Autosaved
+      </div>
+      {!mob && (
+        <span style={{ fontFamily: "'DM Sans'", fontSize: 11, color: "#475569", letterSpacing: ".06em" }}>
+          PREVIEW
+        </span>
+      )}
+    </div>
 
-            {/* Editor + preview */}
-            <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-              <div style={{ flex: showPreview ? "0 0 60%" : "1", minWidth: 0, overflow: "hidden" }}>
-                <Editor
-                  height="100%"
-                  defaultLanguage={lesson.order <= 5 ? "html" : "css"}
-                  theme="vs-dark"
-                  value={code}
-                  onChange={(v) => setCode(v || "")}
-                  options={{
-                    fontSize: 13, minimap: { enabled: false },
-                    lineNumbers: "on", scrollBeyondLastLine: false,
-                    wordWrap: "on", padding: { top: 12 },
-                    fontFamily: "'JetBrains Mono', monospace",
-                  }}
-                />
-              </div>
-              {showPreview && !mob && (
-                <div style={{ flex: "0 0 40%", borderLeft: "1px solid rgba(255,255,255,.06)", background: "#fff", display: "flex", flexDirection: "column" }}>
-                  <div style={{ padding: "4px 10px", borderBottom: "1px solid #eee", fontSize: 10, color: "#999", letterSpacing: ".06em", textTransform: "uppercase" }}>
-                    Live preview
-                  </div>
-                  <iframe
-                    srcDoc={preview || `<html><body style="font-family:sans-serif;padding:16px;color:#666;display:flex;align-items:center;justify-content:center;height:80vh;margin:0;flex-direction:column;gap:8px"><p style="font-size:13px">Click RUN to see your output</p></body></html>`}
-                    title="preview"
-                    style={{ flex: 1, border: "none" }}
-                    sandbox="allow-scripts"
-                  />
-                </div>
-              )}
-            </div>
+    {/* Editor + preview */}
+    <div style={{ flex: 1, display: "flex", flexDirection: mob ? "column" : "row", overflow: "hidden" }}>
+      <div style={{
+        flex: showPreview && !mob ? "0 0 60%" : "1",
+        minWidth: 0, overflow: "hidden",
+        display: showPreview && mob ? "none" : "flex",
+        flexDirection: "column",
+      }}>
+        <Editor
+          height="100%"
+          defaultLanguage={lesson.order <= 5 ? "html" : "css"}
+          theme="vs-dark"
+          value={code}
+          onChange={(v) => setCode(v || "")}
+          options={{
+            fontSize: mob ? 12 : 13,
+            minimap: { enabled: false },
+            lineNumbers: mob ? "off" : "on",
+            scrollBeyondLastLine: false,
+            wordWrap: "on",
+            padding: { top: 12 },
+            fontFamily: "'JetBrains Mono', monospace",
+          }}
+        />
+      </div>
 
-            {/* Run bar */}
-            <div style={{
-              height: 44, background: "#161B22",
-              borderTop: "1px solid rgba(255,255,255,.06)",
-              display: "flex", alignItems: "center",
-              padding: "0 12px", gap: 10, flexShrink: 0,
-            }}>
-              <span style={{ fontFamily: "'DM Sans'", fontSize: 11, color: "#475569", fontStyle: "italic", flex: 1 }}>
-                {lesson.content.hint || "Edit the code and click Run to see the result"}
-              </span>
-              <button
-                onClick={() => setShowPreview((p) => !p)}
-                style={{
-                  background: "rgba(255,255,255,.06)", color: "#94A3B8",
-                  border: "1px solid rgba(255,255,255,.1)", borderRadius: 6,
-                  padding: "5px 12px", cursor: "pointer",
-                  fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 11,
-                }}
-              >
-                {showPreview ? "Hide Preview" : "Show Preview"}
-              </button>
-              <button onClick={runCode} style={{
-                display: "flex", alignItems: "center", gap: 6,
-                background: "#10B981", color: "#fff", border: "none",
-                borderRadius: 6, padding: "6px 16px", cursor: "pointer",
-                fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 11,
-              }}>
-                ▶ RUN
-              </button>
-            </div>
+      {showPreview && (
+        <div style={{
+          ...(mob ? {
+            position: "fixed", inset: 0, zIndex: 200,
+            display: "flex", flexDirection: "column",
+            background: "#fff",
+          } : {
+            flex: "0 0 40%",
+            borderLeft: "1px solid rgba(255,255,255,.06)",
+            background: "#fff",
+            display: "flex", flexDirection: "column",
+          }),
+        }}>
+          <div style={{
+            padding: "8px 12px",
+            borderBottom: "1px solid #eee",
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            background: "#f8f8f8", flexShrink: 0,
+          }}>
+            <span style={{ fontSize: 11, color: "#999", letterSpacing: ".06em", textTransform: "uppercase", fontFamily: "sans-serif" }}>
+              Live Preview
+            </span>
+            <button
+              onClick={() => setShowPreview(false)}
+              style={{
+                background: "#ef4444", color: "#fff", border: "none",
+                borderRadius: 6, padding: "4px 12px", cursor: "pointer",
+                fontFamily: "sans-serif", fontSize: 12, fontWeight: 600,
+              }}
+            >
+              ✕ Close
+            </button>
           </div>
-        )}
+          <iframe
+            srcDoc={preview || `<html><body style="font-family:sans-serif;padding:16px;color:#666;display:flex;align-items:center;justify-content:center;height:80vh;margin:0;flex-direction:column;gap:8px"><p style="font-size:13px">Your output will appear here</p></body></html>`}
+            title="preview"
+            style={{ flex: 1, border: "none" }}
+            sandbox="allow-scripts"
+          />
+        </div>
+      )}
+    </div>
 
+    {/* Run bar */}
+    <div style={{
+      height: 44, background: "#161B22",
+      borderTop: "1px solid rgba(255,255,255,.06)",
+      display: "flex", alignItems: "center",
+      padding: "0 12px", gap: 10, flexShrink: 0,
+    }}>
+      <span style={{ fontFamily: "'DM Sans'", fontSize: 11, color: "#475569", fontStyle: "italic", flex: 1 }}>
+        {mob ? (lesson.content.hint || "Edit then tap RUN") : (lesson.content.hint || "Edit the code and click Run to see the result")}
+      </span>
+      {!mob && (
+        <button
+          onClick={() => setShowPreview((p) => !p)}
+          style={{
+            background: "rgba(255,255,255,.06)", color: "#94A3B8",
+            border: "1px solid rgba(255,255,255,.1)", borderRadius: 6,
+            padding: "5px 12px", cursor: "pointer",
+            fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 11,
+          }}
+        >
+          {showPreview ? "Hide Preview" : "Show Preview"}
+        </button>
+      )}
+      <button
+        onClick={() => { runCode(); setShowPreview(true); }}
+        style={{
+          display: "flex", alignItems: "center", gap: 6,
+          background: "#10B981", color: "#fff", border: "none",
+          borderRadius: 6, padding: "6px 16px", cursor: "pointer",
+          fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 11,
+        }}
+      >
+        ▶ RUN
+      </button>
+    </div>
+
+  </div>
+)}
         {/* ── AI Tutor panel ── */}
         {aiOpen && !mob && (
           <div style={{
