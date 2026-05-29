@@ -8,6 +8,7 @@ import TrackPage from "./pages/TrackPage";
 import LessonPage from "./pages/LessonPage";
 import SubmitPage from "./pages/SubmitPage";
 import CertificatePage from "./pages/CertificatePage";
+import TracksPage from "./pages/TracksPage";
 import VerifyPage from "./pages/VerifyPage";
 import PricingPage from "./pages/PricingPage";
 import { ProtectedRoute, PublicRoute } from "./components/ui/ProtectedRoute";
@@ -73,6 +74,7 @@ function App() {
         <Route path="/lessons" element={<ProtectedRoute><LessonPage /></ProtectedRoute>} />
         <Route path="/submit" element={<ProtectedRoute><SubmitPage /></ProtectedRoute>} />
         <Route path="/certificates" element={<ProtectedRoute><CertificatePage /></ProtectedRoute>} />
+        <Route path="/tracks" element={<ProtectedRoute><TracksPage /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );
