@@ -222,14 +222,17 @@ export default function LessonPage() {
       <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
 
         {/* ── Left panel ── */}
-        {(!mob || tab === "concept" || tab === "quiz") && (
-          <div style={{
-            width: mob ? "100%" : 320, flexShrink: 0,
-            background: "#0F0F1A",
-            borderRight: mob ? "none" : "1px solid rgba(255,255,255,.06)",
-            display: "flex", flexDirection: "column",
-            overflow: "hidden",
-          }}>
+      {/* ── Left panel ── */}
+{(!mob || tab === "concept" || tab === "quiz") && (
+  <div style={{
+    width: mob ? "100%" : 320,
+    minWidth: mob ? "auto" : 320,
+    flexShrink: 0,
+    background: "#0F0F1A",
+    borderRight: mob ? "none" : "1px solid rgba(255,255,255,.06)",
+    display: "flex", flexDirection: "column",
+    overflow: "hidden",
+  }}>
             {/* Tab switcher */}
             <div style={{ display: "flex", borderBottom: "1px solid rgba(255,255,255,.06)", flexShrink: 0 }}>
               {["concept", "quiz"].map((t) => (
