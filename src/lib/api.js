@@ -39,5 +39,9 @@ user: {
     completeLesson: (slug, id) =>
       request(`/api/tracks/${slug}/lessons/${id}/complete`, { method: "POST" }),
   },
+  code: {
+  run: (code, language = "python") =>
+    request("/api/code/run", { method: "POST", body: JSON.stringify({ code, language }) }),
+},
 };
 

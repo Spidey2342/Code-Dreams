@@ -32,6 +32,9 @@ export default function LessonPage() {
   const [selected, setSelected] = useState(null);
   const [quizDone, setQuizDone] = useState(false);
   const [score, setScore] = useState(0);
+  const [output, setOutput] = useState("");
+const [running, setRunning] = useState(false);
+const [outputError, setOutputError] = useState(false);
   const chatEndRef = useRef(null);
 
   useEffect(() => {
@@ -60,7 +63,34 @@ export default function LessonPage() {
     fetchLesson();
   }, [lessonId, trackSlug]);
 
-  const runCode = () => setPreview(code);
+ const isPython = lesson?.content?.language === "python" || lesson?.order > 10;
+
+const runCode = async () => {
+  if (isPython) {
+    setRunning(true);
+    setOutput("");
+    setOutputError(false);
+    try {
+      const result = await api.code.run(code, "python");
+      if (result.stderr && !result.output) {
+        setOutput(result.stderr);
+        setOutputError(true);
+      } else {
+        setOutput(result.output || "Program ran with no output.");
+        setOutputError(false);
+      }
+    } catch {
+      setOutput("Failed to run code. Check your connection.");
+      setOutputError(true);
+    } finally {
+      setRunning(false);
+      setShowPreview(true);
+    }
+  } else {
+    setPreview(code);
+    setShowPreview(true);
+  }
+};
 
   const currentIndex = allLessons.findIndex((l) => l.id === lesson?.id);
   const prevLesson = currentIndex > 0 ? allLessons[currentIndex - 1] : null;
@@ -544,54 +574,73 @@ export default function LessonPage() {
           }}
         />
       </div>
-
-      {showPreview && (
-        <div style={{
-          ...(mob ? {
-            position: "fixed", inset: 0, zIndex: 200,
-            display: "flex", flexDirection: "column",
-            background: "#fff",
-          } : {
-            flex: "0 0 40%",
-            borderLeft: "1px solid rgba(255,255,255,.06)",
-            background: "#fff",
-            display: "flex", flexDirection: "column",
-          }),
+{showPreview && (
+  <div style={{
+    ...(mob ? {
+      position: "fixed", inset: 0, zIndex: 200,
+      display: "flex", flexDirection: "column",
+      background: isPython ? "#0D1117" : "#fff",
+    } : {
+      flex: "0 0 40%",
+      borderLeft: "1px solid rgba(255,255,255,.06)",
+      background: isPython ? "#0D1117" : "#fff",
+      display: "flex", flexDirection: "column",
+    }),
+  }}>
+    {/* Preview header */}
+    <div style={{
+      padding: "8px 12px",
+      borderBottom: `1px solid ${isPython ? "rgba(255,255,255,.08)" : "#eee"}`,
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+      background: isPython ? "#161B22" : "#f8f8f8", flexShrink: 0,
+    }}>
+      <span style={{ fontSize: 11, color: isPython ? "#475569" : "#999", letterSpacing: ".06em", textTransform: "uppercase", fontFamily: "sans-serif" }}>
+        {isPython ? "Terminal Output" : "Live Preview"}
+      </span>
+      {mob ? (
+        <button onClick={() => setShowPreview(false)} style={{
+          background: "#ef4444", color: "#fff", border: "none",
+          borderRadius: 6, padding: "4px 12px", cursor: "pointer",
+          fontFamily: "sans-serif", fontSize: 12, fontWeight: 600,
         }}>
-          <div style={{
-            padding: "8px 12px",
-            borderBottom: "1px solid #eee",
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            background: "#f8f8f8", flexShrink: 0,
-          }}>
-            <span style={{ fontSize: 11, color: "#999", letterSpacing: ".06em", textTransform: "uppercase", fontFamily: "sans-serif" }}>
-              Live Preview
-            </span>
-          {mob ? (
-  <button
-    onClick={() => setShowPreview(false)}
-    style={{
-      background: "#ef4444", color: "#fff", border: "none",
-      borderRadius: 6, padding: "4px 12px", cursor: "pointer",
-      fontFamily: "sans-serif", fontSize: 12, fontWeight: 600,
-    }}
-  >
-    ✕ Close
-  </button>
-) : (
-  <span style={{ fontSize: 11, color: "#999", fontFamily: "sans-serif" }}>
-    Click RUN to update
-  </span>
-)}
-          </div>
-          <iframe
-            srcDoc={preview || `<html><body style="font-family:sans-serif;padding:16px;color:#666;display:flex;align-items:center;justify-content:center;height:80vh;margin:0;flex-direction:column;gap:8px"><p style="font-size:13px">Your output will appear here</p></body></html>`}
-            title="preview"
-            style={{ flex: 1, border: "none" }}
-            sandbox="allow-scripts"
-          />
-        </div>
+          ✕ Close
+        </button>
+      ) : (
+        <span style={{ fontSize: 11, color: isPython ? "#475569" : "#999", fontFamily: "sans-serif" }}>
+          {isPython ? "Python 3.10" : "Click RUN to update"}
+        </span>
       )}
+    </div>
+
+    {/* Output area */}
+    {isPython ? (
+      <div style={{ flex: 1, overflowY: "auto", padding: 16, fontFamily: "'JetBrains Mono', monospace", fontSize: 13, lineHeight: 1.7 }}>
+        {running ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#475569" }}>
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#6366F1", animation: "bounce 1s ease infinite" }} />
+            Running...
+          </div>
+        ) : output ? (
+          <pre style={{
+            margin: 0, color: outputError ? "#EF4444" : "#10B981",
+            whiteSpace: "pre-wrap", wordBreak: "break-word",
+          }}>
+            {output}
+          </pre>
+        ) : (
+          <span style={{ color: "#475569" }}>Click RUN to execute your Python code</span>
+        )}
+      </div>
+    ) : (
+      <iframe
+        srcDoc={preview || `<html><body style="font-family:sans-serif;padding:16px;color:#666;display:flex;align-items:center;justify-content:center;height:80vh;margin:0;flex-direction:column;gap:8px"><p style="font-size:13px">Your output will appear here</p></body></html>`}
+        title="preview"
+        style={{ flex: 1, border: "none" }}
+        sandbox="allow-scripts"
+      />
+    )}
+  </div>
+)}
     </div>
 
     {/* Run bar */}
@@ -617,17 +666,18 @@ export default function LessonPage() {
           {showPreview ? "Hide Preview" : "Show Preview"}
         </button>
       )}
-      <button
-        onClick={() => { runCode(); setShowPreview(true); }}
-        style={{
-          display: "flex", alignItems: "center", gap: 6,
-          background: "#10B981", color: "#fff", border: "none",
-          borderRadius: 6, padding: "6px 16px", cursor: "pointer",
-          fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 11,
-        }}
-      >
-        ▶ RUN
-      </button>
+     <button
+  onClick={() => { runCode(); }}
+  disabled={running}
+  style={{
+    display: "flex", alignItems: "center", gap: 6,
+    background: running ? "#475569" : "#10B981", color: "#fff", border: "none",
+    borderRadius: 6, padding: "6px 16px", cursor: running ? "not-allowed" : "pointer",
+    fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 11,
+  }}
+>
+  {running ? "⏳ Running..." : "▶ RUN"}
+</button>
     </div>
 
   </div>
