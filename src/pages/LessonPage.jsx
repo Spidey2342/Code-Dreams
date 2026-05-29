@@ -14,37 +14,42 @@ export default function LessonPage() {
   const mob = w < 768;
 
   const [lesson, setLesson] = useState(null);
+  const [allLessons, setAllLessons] = useState([]);
   const [loadingLesson, setLoadingLesson] = useState(true);
-  const [tab, setTab] = useState("concept");
   const [code, setCode] = useState("");
   const [preview, setPreview] = useState("");
-  const [showPreview, setShowPreview] = useState(false);
-  const [quizStep, setQuizStep] = useState(0);
-  const [selected, setSelected] = useState(null);
-  const [quizDone, setQuizDone] = useState(false);
-  const [score, setScore] = useState(0);
+  const [showPreview, setShowPreview] = useState(true);
   const [completing, setCompleting] = useState(false);
+  const [completed, setCompleted] = useState(false);
+  const [sessionXP, setSessionXP] = useState(0);
+  const [hearts, setHearts] = useState(3);
   const [aiOpen, setAiOpen] = useState(false);
   const [aiMessages, setAiMessages] = useState([]);
   const [aiInput, setAiInput] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
+  const [tab, setTab] = useState("concept"); // concept | quiz
+  const [quizStep, setQuizStep] = useState(0);
+  const [selected, setSelected] = useState(null);
+  const [quizDone, setQuizDone] = useState(false);
+  const [score, setScore] = useState(0);
   const chatEndRef = useRef(null);
 
   useEffect(() => {
     const fetchLesson = async () => {
       try {
-        if (!lessonId) {
-          const data = await api.tracks.getLessons(trackSlug);
-          const firstIncomplete = data.lessons.find((l) => !l.completed);
-          const target = firstIncomplete || data.lessons[0];
+        const data = await api.tracks.getLessons(trackSlug);
+        setAllLessons(data.lessons);
+        let target;
+        if (lessonId) {
+          target = data.lessons.find((l) => l.id === lessonId);
+        } else {
+          target = data.lessons.find((l) => !l.completed) || data.lessons[0];
+        }
+        if (target) {
           setLesson(target);
           setCode(target.content.exercise || "");
+          setCompleted(target.completed);
           setAiMessages([{ role: "ai", text: `Hi! I'm your AI tutor for "${target.title}". Ask me anything about this lesson.` }]);
-        } else {
-          const data = await api.tracks.getLesson(trackSlug, lessonId);
-          setLesson(data);
-          setCode(data.content.exercise || "");
-          setAiMessages([{ role: "ai", text: `Hi! I'm your AI tutor for "${data.title}". Ask me anything about this lesson.` }]);
         }
       } catch (err) {
         console.error("Failed to load lesson:", err);
@@ -55,13 +60,52 @@ export default function LessonPage() {
     fetchLesson();
   }, [lessonId, trackSlug]);
 
-  const runCode = () => { setPreview(code); setShowPreview(true); };
+  const runCode = () => setPreview(code);
+
+  const currentIndex = allLessons.findIndex((l) => l.id === lesson?.id);
+  const prevLesson = currentIndex > 0 ? allLessons[currentIndex - 1] : null;
+  const nextLesson = currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
+
+  const goToLesson = (l) => {
+    navigate(`/lessons?track=${trackSlug}&id=${l.id}`);
+    setLesson(l);
+    setCode(l.content.exercise || "");
+    setCompleted(l.completed);
+    setTab("concept");
+    setQuizStep(0);
+    setSelected(null);
+    setQuizDone(false);
+    setScore(0);
+    setPreview("");
+  };
+
+  const completeLesson = async () => {
+    if (completing || completed || !lesson) return;
+    setCompleting(true);
+    try {
+      await api.tracks.completeLesson(trackSlug, lesson.id);
+      setCompleted(true);
+      setSessionXP((x) => x + lesson.xpValue);
+      setTimeout(() => {
+        if (nextLesson) goToLesson(nextLesson);
+        else navigate("/track");
+      }, 1200);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setCompleting(false);
+    }
+  };
 
   const handleAnswer = (i) => {
     if (selected !== null || !lesson) return;
     setSelected(i);
     const quiz = lesson.content.quiz;
-    if (i === quiz[quizStep].answer) setScore((s) => s + 1);
+    if (i === quiz[quizStep].answer) {
+      setScore((s) => s + 1);
+    } else {
+      setHearts((h) => Math.max(0, h - 1));
+    }
   };
 
   const nextQuestion = () => {
@@ -72,19 +116,6 @@ export default function LessonPage() {
       setSelected(null);
     } else {
       setQuizDone(true);
-      completeLesson();
-    }
-  };
-
-  const completeLesson = async () => {
-    if (completing || !lesson) return;
-    setCompleting(true);
-    try {
-      await api.tracks.completeLesson(trackSlug, lesson.id);
-    } catch (err) {
-      console.error("Failed to complete lesson:", err);
-    } finally {
-      setCompleting(false);
     }
   };
 
@@ -124,234 +155,430 @@ export default function LessonPage() {
   );
 
   const quiz = lesson.content.quiz || [];
-  const TABS = ["concept", "code", "quiz"];
-
-  const ConceptContent = ({ isMob }) => (
-    <div style={{ padding: isMob ? "20px 16px" : "20px" }}>
-      <h2 style={{ fontFamily: "'Space Grotesk'", fontWeight: 700, fontSize: 18, color: "#F8FAFC", marginBottom: isMob ? 14 : 16 }}>
-        {lesson.title}
-      </h2>
-      {lesson.content.concept.split("\n\n").map((p, i) => (
-        <div key={i} style={{ marginBottom: isMob ? 14 : 16 }}>
-          {p.includes("\n- ") || p.startsWith("- ") ? (
-            <ul style={{ paddingLeft: 18, margin: 0 }}>
-              {p.split("\n").filter(l => l.trim()).map((line, j) => (
-                <li key={j} style={{ fontFamily: "'DM Sans'", fontSize: 14, lineHeight: 1.75, color: "#94A3B8", marginBottom: 6 }}>
-                  {line.replace(/^- /, "")}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p style={{ fontFamily: "'DM Sans'", fontSize: 14, lineHeight: 1.75, color: "#94A3B8", margin: 0 }}>
-              {p}
-            </p>
-          )}
-        </div>
-      ))}
-    </div>
-  );
+  const keyConcepts = lesson.content.keyConcepts || [];
+  const exerciseDesc = lesson.content.exerciseDescription || "";
+  const diagramLabel = lesson.content.diagramLabel || "";
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0A0A0F", display: "flex", flexDirection: "column" }}>
+    <div style={{ height: "100vh", background: "#0A0A0F", display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
       {/* ── Top bar ── */}
       <div style={{
-        height: 56, background: "#0F0F1A",
+        height: 48, background: "#0F0F1A",
         borderBottom: "1px solid rgba(255,255,255,.06)",
         display: "flex", alignItems: "center",
-        padding: "0 20px", gap: 16, flexShrink: 0,
+        padding: "0 16px", gap: 12, flexShrink: 0,
       }}>
-        <button
-          onClick={() => navigate("/dashboard")}
-          style={{
-            background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.1)",
-            borderRadius: 8, padding: "6px 12px", cursor: "pointer",
-            fontFamily: "'DM Sans'", fontSize: 12, color: "#94A3B8",
-            display: "flex", alignItems: "center", gap: 6,
-          }}
-        >
-          ← Back
-        </button>
-       <div style={{ flex: 1, minWidth: 0 }}>
-  {!mob && (
-    <p style={{ fontFamily: "'DM Sans'", fontSize: 11, color: "#475569", marginBottom: 1 }}>
-      HTML & CSS Foundation
-    </p>
-  )}
-  <p style={{
-    fontFamily: "'Space Grotesk'", fontWeight: 600,
-    fontSize: mob ? 12 : 14, color: "#F8FAFC",
-    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-  }}>
-    {mob ? lesson.title : `Lesson ${lesson.order}: ${lesson.title}`}
-  </p>
-</div>
-        <div style={{ display: "flex", alignItems: "center", gap: mob ? 6 : 8, flexShrink: 0 }}>
-  {!mob && (
-    <span style={{ fontFamily: "'DM Sans'", fontSize: 12, color: "#F59E0B" }}>⭐ {lesson.xpValue} XP</span>
-  )}
-  <button
-    onClick={() => setAiOpen((o) => !o)}
-    style={{
-      background: aiOpen ? "#6366F1" : "rgba(99,102,241,.15)",
-      border: "1px solid rgba(99,102,241,.3)",
-      borderRadius: 8, padding: mob ? "6px 10px" : "6px 14px", cursor: "pointer",
-      fontFamily: "'Space Grotesk'", fontWeight: 600,
-      fontSize: mob ? 11 : 12, color: aiOpen ? "#fff" : "#a78bfa",
-      display: "flex", alignItems: "center", gap: 6,
-    }}
-  >
-    🤖 {mob ? "AI" : "AI Tutor"}
-  </button>
+        {/* Left — track name */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{
+            width: 28, height: 28, borderRadius: 6, background: "#6366F1",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontFamily: "'JetBrains Mono'", fontSize: 10, color: "#fff",
+          }}>
+            &lt;/&gt;
+          </div>
+          {!mob && (
+            <span style={{ fontFamily: "'DM Sans'", fontSize: 12, color: "#475569", letterSpacing: ".04em", textTransform: "uppercase" }}>
+              HTML & CSS Foundation
+            </span>
+          )}
+        </div>
+
+        <div style={{ flex: 1 }} />
+
+        {/* Hearts */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: 6,
+          background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.08)",
+          borderRadius: 20, padding: "4px 12px",
+        }}>
+          {[0, 1, 2].map((i) => (
+            <span key={i} style={{ fontSize: 13, opacity: i < hearts ? 1 : 0.2 }}>❤️</span>
+          ))}
+          <span style={{ fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 11, color: "#94A3B8", marginLeft: 4 }}>
+            {hearts} LIVES LEFT
+          </span>
+        </div>
+
+        {/* Session XP */}
+        <div style={{ display: "flex", alignItems: "center", gap: 5, fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 12, color: "#10B981" }}>
+          <span>⭐</span>
+          <span>SESSION XP +{sessionXP}</span>
+        </div>
+
+        {/* Avatar */}
+        <div style={{
+          width: 28, height: 28, borderRadius: "50%",
+          background: "linear-gradient(135deg, #6366F1, #a78bfa)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontFamily: "'Space Grotesk'", fontWeight: 700, fontSize: 11, color: "#fff",
+        }}>
+          M
         </div>
       </div>
 
       {/* ── Body ── */}
-      <div style={{ flex: 1, display: "flex", overflow: "hidden", position: "relative" }}>
+      <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
 
         {/* ── Left panel ── */}
-        <div style={{
-          width: mob ? "100%" : aiOpen ? "calc(100% - 340px)" : "100%",
-          display: "flex", flexDirection: mob ? "column" : "row",
-          transition: "width .25s ease", overflow: "hidden",
-        }}>
-
-          {/* Tab nav + content panel */}
+        {(!mob || tab === "concept" || tab === "quiz") && (
           <div style={{
             width: mob ? "100%" : 320, flexShrink: 0,
             background: "#0F0F1A",
             borderRight: mob ? "none" : "1px solid rgba(255,255,255,.06)",
-            borderBottom: mob ? "1px solid rgba(255,255,255,.06)" : "none",
             display: "flex", flexDirection: "column",
             overflow: "hidden",
           }}>
-            {/* Tabs */}
+            {/* Tab switcher */}
             <div style={{ display: "flex", borderBottom: "1px solid rgba(255,255,255,.06)", flexShrink: 0 }}>
-              {TABS.map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setTab(t)}
-                  style={{
-                    flex: 1, padding: "14px 0",
-                    background: "transparent", border: "none",
-                    borderBottom: tab === t ? "2px solid #6366F1" : "2px solid transparent",
-                    fontFamily: "'Space Grotesk'", fontWeight: 600,
-                    fontSize: 11, letterSpacing: ".08em", textTransform: "uppercase",
-                    color: tab === t ? "#F8FAFC" : "#475569", cursor: "pointer",
-                    transition: "all .15s",
-                  }}
-                >
-                  {t === "concept" ? "📖 Concept" : t === "code" ? "💻 Code" : "❓ Quiz"}
+              {["concept", "quiz"].map((t) => (
+                <button key={t} onClick={() => setTab(t)} style={{
+                  flex: 1, padding: "12px 0", background: "transparent", border: "none",
+                  borderBottom: tab === t ? "2px solid #6366F1" : "2px solid transparent",
+                  fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 11,
+                  letterSpacing: ".08em", textTransform: "uppercase",
+                  color: tab === t ? "#F8FAFC" : "#475569", cursor: "pointer",
+                }}>
+                  {t === "concept" ? "📖 Concept" : "❓ Quiz"}
                 </button>
               ))}
+              {mob && (
+                <button onClick={() => setTab("code")} style={{
+                  flex: 1, padding: "12px 0", background: "transparent", border: "none",
+                  borderBottom: tab === "code" ? "2px solid #6366F1" : "2px solid transparent",
+                  fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 11,
+                  letterSpacing: ".08em", textTransform: "uppercase",
+                  color: tab === "code" ? "#F8FAFC" : "#475569", cursor: "pointer",
+                }}>
+                  💻 Code
+                </button>
+              )}
             </div>
 
-            {/* Tab content — desktop */}
-            {!mob && (
-              <div style={{ flex: 1, overflowY: "auto" }}>
-                {tab === "concept" && <ConceptContent isMob={false} />}
-                {tab === "quiz" && (
-                  <div style={{ padding: "20px" }}>
-                    <QuizPanel quiz={quiz} quizStep={quizStep} selected={selected} quizDone={quizDone} score={score} onAnswer={handleAnswer} onNext={nextQuestion} navigate={navigate} />
+            {/* Concept tab */}
+            {tab === "concept" && (
+              <div style={{ flex: 1, overflowY: "auto", padding: "18px 16px" }}>
+                {/* Module label */}
+                <p style={{ fontFamily: "'DM Sans'", fontSize: 10, letterSpacing: ".1em", color: "#475569", textTransform: "uppercase", marginBottom: 6 }}>
+                  Current module
+                </p>
+
+                {/* Title */}
+                <h2 style={{ fontFamily: "'Space Grotesk'", fontWeight: 700, fontSize: 18, color: "#F8FAFC", marginBottom: 8, lineHeight: 1.3 }}>
+                  Lesson {lesson.order} — {lesson.title}
+                </h2>
+
+                {/* XP badge */}
+                <div style={{
+                  display: "inline-flex", alignItems: "center", gap: 5,
+                  background: "rgba(16,185,129,.1)", border: "1px solid rgba(16,185,129,.2)",
+                  borderRadius: 20, padding: "3px 10px", marginBottom: 14,
+                  fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 11, color: "#10B981",
+                }}>
+                  ⭐ +{lesson.xpValue} XP on completion
+                </div>
+
+                {/* Concept text */}
+                {lesson.content.concept.split("\n\n").map((p, i) => (
+                  <div key={i} style={{ marginBottom: 12 }}>
+                    {p.includes("\n- ") || p.startsWith("- ") ? (
+                      <ul style={{ paddingLeft: 16, margin: 0 }}>
+                        {p.split("\n").filter(l => l.trim()).map((line, j) => (
+                          <li key={j} style={{ fontFamily: "'DM Sans'", fontSize: 13, lineHeight: 1.7, color: "#94A3B8", marginBottom: 5 }}>
+                            {line.replace(/^- /, "")}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p style={{ fontFamily: "'DM Sans'", fontSize: 13, lineHeight: 1.7, color: "#94A3B8", margin: 0 }}>
+                        {p}
+                      </p>
+                    )}
                   </div>
-                )}
-                {tab === "code" && (
-                  <div style={{ padding: "20px" }}>
-                    <p style={{ fontFamily: "'DM Sans'", fontSize: 13, color: "#94A3B8", lineHeight: 1.7 }}>
-                      Write your HTML in the editor. Click <strong style={{ color: "#F8FAFC" }}>RUN</strong> to see the output.
+                ))}
+
+                {/* Key concepts */}
+                {keyConcepts.length > 0 && (
+                  <div style={{
+                    background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.07)",
+                    borderRadius: 10, padding: "12px 14px", marginBottom: 14,
+                  }}>
+                    <p style={{ fontFamily: "'DM Sans'", fontSize: 10, fontWeight: 600, letterSpacing: ".08em", color: "#6366F1", textTransform: "uppercase", marginBottom: 10 }}>
+                      ℹ Key concepts
                     </p>
+                    {keyConcepts.map((kc, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: i < keyConcepts.length - 1 ? 8 : 0 }}>
+                        <div style={{
+                          width: 18, height: 18, borderRadius: "50%", flexShrink: 0,
+                          background: "rgba(99,102,241,.15)", border: "1px solid rgba(99,102,241,.3)",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          fontFamily: "'Space Grotesk'", fontWeight: 700, fontSize: 10, color: "#6366F1",
+                          marginTop: 1,
+                        }}>
+                          {i + 1}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <code style={{
+                            fontFamily: "'JetBrains Mono'", fontSize: 11,
+                            background: "rgba(255,255,255,.06)", border: "1px solid rgba(255,255,255,.1)",
+                            borderRadius: 4, padding: "1px 6px", color: "#a78bfa", marginRight: 4,
+                          }}>
+                            {kc.code}
+                          </code>
+                          <span style={{ fontFamily: "'DM Sans'", fontSize: 12, color: "#94A3B8" }}>
+                            — {kc.description}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
+
+                {/* Exercise description */}
+                {exerciseDesc && (
+                  <p style={{ fontFamily: "'DM Sans'", fontSize: 13, lineHeight: 1.65, color: "#94A3B8", marginBottom: 14 }}>
+                    {exerciseDesc}
+                  </p>
+                )}
+
+                {/* Diagram */}
+                {diagramLabel && (
+                  <div style={{
+                    border: "1px solid rgba(255,255,255,.07)", borderRadius: 10,
+                    overflow: "hidden", marginBottom: 14,
+                  }}>
+                    <div style={{
+                      background: "rgba(99,102,241,.06)", padding: "24px 16px",
+                      display: "flex", alignItems: "center", justifyContent: "center", minHeight: 80,
+                    }}>
+                      <span style={{ fontFamily: "'DM Sans'", fontSize: 12, color: "#475569", fontStyle: "italic" }}>
+                        {diagramLabel}
+                      </span>
+                    </div>
+                    <div style={{ padding: "5px 10px", borderTop: "1px solid rgba(255,255,255,.06)" }}>
+                      <span style={{ fontFamily: "'DM Sans'", fontSize: 10, letterSpacing: ".06em", color: "#475569", textTransform: "uppercase" }}>
+                        Diagram: {diagramLabel}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* AI tutor button */}
+                <button
+                  onClick={() => setAiOpen((o) => !o)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 8,
+                    padding: "10px 14px", border: "1px solid rgba(255,255,255,.08)",
+                    borderRadius: 10, cursor: "pointer",
+                    fontFamily: "'DM Sans'", fontSize: 13, color: "#94A3B8",
+                    background: aiOpen ? "rgba(99,102,241,.1)" : "transparent",
+                    width: "100%", textAlign: "left", transition: "all .15s",
+                  }}
+                >
+                  <span style={{ fontSize: 16 }}>🤖</span>
+                  Ask AI tutor for hint
+                </button>
               </div>
             )}
 
-            {/* Tab content — mobile */}
-            {mob && tab === "concept" && <ConceptContent isMob={true} />}
-            {mob && tab === "quiz" && (
-              <div style={{ padding: "20px 16px" }}>
-                <QuizPanel quiz={quiz} quizStep={quizStep} selected={selected} quizDone={quizDone} score={score} onAnswer={handleAnswer} onNext={nextQuestion} navigate={navigate} />
+            {/* Quiz tab */}
+            {tab === "quiz" && (
+              <div style={{ flex: 1, overflowY: "auto", padding: "18px 16px" }}>
+                {quizDone ? (
+                  <div style={{ textAlign: "center", paddingTop: 32 }}>
+                    <p style={{ fontSize: 48, marginBottom: 12 }}>
+                      {score === quiz.length ? "🎉" : score >= quiz.length / 2 ? "👍" : "📚"}
+                    </p>
+                    <h3 style={{ fontFamily: "'Space Grotesk'", fontWeight: 700, fontSize: 20, color: "#F8FAFC", marginBottom: 8 }}>
+                      {score}/{quiz.length} Correct
+                    </h3>
+                    <p style={{ fontFamily: "'DM Sans'", fontSize: 14, color: "#94A3B8", marginBottom: 24 }}>
+                      {score === quiz.length ? "Perfect! Mark this lesson complete." : score >= quiz.length / 2 ? "Good job! Ready to continue." : "Review the concept and try again."}
+                    </p>
+                    {score >= quiz.length / 2 && (
+                      <button onClick={completeLesson} disabled={completing || completed} style={{
+                        width: "100%", padding: "12px",
+                        background: completed ? "#10B981" : "#6366F1",
+                        color: "#fff", border: "none", borderRadius: 8,
+                        cursor: completing || completed ? "not-allowed" : "pointer",
+                        fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 13,
+                      }}>
+                        {completed ? "✓ Completed!" : completing ? "Saving..." : "Mark Complete →"}
+                      </button>
+                    )}
+                    {score < quiz.length / 2 && (
+                      <button onClick={() => { setQuizStep(0); setSelected(null); setQuizDone(false); setScore(0); }} style={{
+                        width: "100%", padding: "12px",
+                        background: "transparent", color: "#6366F1",
+                        border: "1px solid rgba(99,102,241,.3)", borderRadius: 8,
+                        cursor: "pointer", fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 13,
+                      }}>
+                        Try Again
+                      </button>
+                    )}
+                  </div>
+                ) : quiz.length === 0 ? (
+                  <p style={{ fontFamily: "'DM Sans'", fontSize: 13, color: "#475569" }}>No quiz for this lesson.</p>
+                ) : (
+                  <div>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+                      <span style={{ fontFamily: "'DM Sans'", fontSize: 12, color: "#475569" }}>
+                        Question {quizStep + 1} of {quiz.length}
+                      </span>
+                      <span style={{ fontFamily: "'DM Sans'", fontSize: 12, color: "#10B981" }}>
+                        {score} correct
+                      </span>
+                    </div>
+                    <h3 style={{ fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 15, color: "#F8FAFC", marginBottom: 16, lineHeight: 1.4 }}>
+                      {quiz[quizStep].q}
+                    </h3>
+                    {quiz[quizStep].options.map((opt, i) => {
+                      let bg = "rgba(255,255,255,.04)";
+                      let border = "rgba(255,255,255,.1)";
+                      let color = "#94A3B8";
+                      if (selected !== null) {
+                        if (i === quiz[quizStep].answer) { bg = "rgba(16,185,129,.12)"; border = "#10B981"; color = "#10B981"; }
+                        else if (i === selected) { bg = "rgba(239,68,68,.12)"; border = "#EF4444"; color = "#EF4444"; }
+                      }
+                      return (
+                        <div key={i} onClick={() => handleAnswer(i)} style={{
+                          padding: "12px 14px", borderRadius: 8, marginBottom: 8,
+                          background: bg, border: `1px solid ${border}`,
+                          cursor: selected === null ? "pointer" : "default",
+                          fontFamily: "'DM Sans'", fontSize: 13, color, transition: "all .15s",
+                        }}>
+                          {opt}
+                        </div>
+                      );
+                    })}
+                    {selected !== null && (
+                      <button onClick={nextQuestion} style={{
+                        marginTop: 8, width: "100%", padding: "12px",
+                        background: "#6366F1", color: "#fff", border: "none",
+                        borderRadius: 8, cursor: "pointer",
+                        fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 13,
+                      }}>
+                        {quizStep < quiz.length - 1 ? "Next Question →" : "See Results →"}
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
+        )}
 
-          {/* Code editor + preview */}
-          {(!mob || tab === "code") && (
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+        {/* ── Center — code editor ── */}
+        {(!mob || tab === "code") && (
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, background: "#0A0A0F" }}>
+
+            {/* Editor toolbar */}
+            <div style={{
+              height: 40, background: "#161B22",
+              borderBottom: "1px solid rgba(255,255,255,.06)",
+              display: "flex", alignItems: "center",
+              padding: "0 12px", gap: 10, flexShrink: 0,
+            }}>
               <div style={{
-                height: 44, background: "#161B22",
-                borderBottom: "1px solid rgba(255,255,255,.06)",
-                display: "flex", alignItems: "center",
-                padding: "0 16px", gap: 12, flexShrink: 0,
+                display: "flex", alignItems: "center", gap: 6,
+                background: "#0F0F1A", border: "1px solid rgba(255,255,255,.1)",
+                borderRadius: "6px 6px 0 0", padding: "4px 10px",
+                fontFamily: "'JetBrains Mono'", fontSize: 11, color: "#94A3B8",
               }}>
-                <div style={{ display: "flex", gap: 6 }}>
-                  {["#FF5F57", "#FFBD2E", "#28C840"].map((c) => (
-                    <span key={c} style={{ width: 10, height: 10, borderRadius: "50%", background: c }} />
-                  ))}
-                </div>
-                <span style={{ fontFamily: "'JetBrains Mono'", fontSize: 11, color: "#484F58", flex: 1 }}>
-                  index.html
-                </span>
-                <button onClick={runCode} style={{
-                  background: "#10B981", color: "#fff", border: "none",
-                  borderRadius: 6, padding: "5px 14px", cursor: "pointer",
-                  fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 11,
-                }}>
-                  ▶ RUN
-                </button>
-                <button onClick={() => setShowPreview((p) => !p)} style={{
-                  background: "rgba(255,255,255,.06)", color: "#94A3B8",
-                  border: "1px solid rgba(255,255,255,.1)",
-                  borderRadius: 6, padding: "5px 12px", cursor: "pointer",
-                  fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 11,
-                }}>
-                  {showPreview ? "Hide Preview" : "Show Preview"}
-                </button>
+                <span style={{ fontSize: 10 }}>📄</span>
+                {lesson.order <= 5 ? "index.html" : "styles.css"}
               </div>
+              <div style={{ flex: 1 }} />
+              <div style={{ display: "flex", alignItems: "center", gap: 5, fontFamily: "'DM Sans'", fontSize: 11, color: "#10B981" }}>
+                <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#10B981" }} />
+                Autosaved
+              </div>
+              {!mob && (
+                <span style={{ fontFamily: "'DM Sans'", fontSize: 11, color: "#475569", letterSpacing: ".06em" }}>
+                  PREVIEW
+                </span>
+              )}
+            </div>
 
-              <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-                <div style={{ flex: showPreview ? "0 0 50%" : "1", minWidth: 0, overflow: "hidden" }}>
-                  <Editor
-                    height="100%"
-                    defaultLanguage="html"
-                    theme="vs-dark"
-                    value={code}
-                    onChange={(v) => setCode(v || "")}
-                    options={{
-                      fontSize: 13, minimap: { enabled: false },
-                      lineNumbers: "on", scrollBeyondLastLine: false,
-                      wordWrap: "on", padding: { top: 12 },
-                    }}
+            {/* Editor + preview */}
+            <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+              <div style={{ flex: showPreview ? "0 0 60%" : "1", minWidth: 0, overflow: "hidden" }}>
+                <Editor
+                  height="100%"
+                  defaultLanguage={lesson.order <= 5 ? "html" : "css"}
+                  theme="vs-dark"
+                  value={code}
+                  onChange={(v) => setCode(v || "")}
+                  options={{
+                    fontSize: 13, minimap: { enabled: false },
+                    lineNumbers: "on", scrollBeyondLastLine: false,
+                    wordWrap: "on", padding: { top: 12 },
+                    fontFamily: "'JetBrains Mono', monospace",
+                  }}
+                />
+              </div>
+              {showPreview && !mob && (
+                <div style={{ flex: "0 0 40%", borderLeft: "1px solid rgba(255,255,255,.06)", background: "#fff", display: "flex", flexDirection: "column" }}>
+                  <div style={{ padding: "4px 10px", borderBottom: "1px solid #eee", fontSize: 10, color: "#999", letterSpacing: ".06em", textTransform: "uppercase" }}>
+                    Live preview
+                  </div>
+                  <iframe
+                    srcDoc={preview || `<html><body style="font-family:sans-serif;padding:16px;color:#666;display:flex;align-items:center;justify-content:center;height:80vh;margin:0;flex-direction:column;gap:8px"><p style="font-size:13px">Click RUN to see your output</p></body></html>`}
+                    title="preview"
+                    style={{ flex: 1, border: "none" }}
+                    sandbox="allow-scripts"
                   />
                 </div>
-                {showPreview && (
-                  <div style={{ flex: "0 0 50%", borderLeft: "1px solid rgba(255,255,255,.06)", background: "#fff" }}>
-                    <iframe srcDoc={preview} title="preview" style={{ width: "100%", height: "100%", border: "none" }} sandbox="allow-scripts" />
-                  </div>
-                )}
-              </div>
+              )}
             </div>
-          )}
-        </div>
+
+            {/* Run bar */}
+            <div style={{
+              height: 44, background: "#161B22",
+              borderTop: "1px solid rgba(255,255,255,.06)",
+              display: "flex", alignItems: "center",
+              padding: "0 12px", gap: 10, flexShrink: 0,
+            }}>
+              <span style={{ fontFamily: "'DM Sans'", fontSize: 11, color: "#475569", fontStyle: "italic", flex: 1 }}>
+                {lesson.content.hint || "Edit the code and click Run to see the result"}
+              </span>
+              <button
+                onClick={() => setShowPreview((p) => !p)}
+                style={{
+                  background: "rgba(255,255,255,.06)", color: "#94A3B8",
+                  border: "1px solid rgba(255,255,255,.1)", borderRadius: 6,
+                  padding: "5px 12px", cursor: "pointer",
+                  fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 11,
+                }}
+              >
+                {showPreview ? "Hide Preview" : "Show Preview"}
+              </button>
+              <button onClick={runCode} style={{
+                display: "flex", alignItems: "center", gap: 6,
+                background: "#10B981", color: "#fff", border: "none",
+                borderRadius: 6, padding: "6px 16px", cursor: "pointer",
+                fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 11,
+              }}>
+                ▶ RUN
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* ── AI Tutor panel ── */}
-        {aiOpen && (
+        {aiOpen && !mob && (
           <div style={{
-            width: mob ? "100%" : 340, flexShrink: 0,
-            background: "#0F0F1A",
+            width: 300, flexShrink: 0, background: "#0F0F1A",
             borderLeft: "1px solid rgba(255,255,255,.06)",
             display: "flex", flexDirection: "column",
-            position: mob ? "fixed" : "relative",
-            inset: mob ? 0 : "auto",
-            zIndex: mob ? 300 : "auto",
           }}>
             <div style={{
-              padding: "14px 16px",
-              borderBottom: "1px solid rgba(255,255,255,.06)",
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-              flexShrink: 0,
+              padding: "12px 16px", borderBottom: "1px solid rgba(255,255,255,.06)",
+              display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0,
             }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: 18 }}>🤖</span>
+                <span style={{ fontSize: 16 }}>🤖</span>
                 <div>
                   <p style={{ fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 13, color: "#F8FAFC" }}>AI Tutor</p>
                   <p style={{ fontFamily: "'DM Sans'", fontSize: 11, color: "#10B981" }}>● Online</p>
@@ -359,8 +586,7 @@ export default function LessonPage() {
               </div>
               <button onClick={() => setAiOpen(false)} style={{ background: "none", border: "none", color: "#475569", cursor: "pointer", fontSize: 16 }}>✕</button>
             </div>
-
-            <div style={{ flex: 1, overflowY: "auto", padding: "16px" }}>
+            <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
               {aiMessages.map((m, i) => (
                 <div key={i} style={{ marginBottom: 12, display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start" }}>
                   <div style={{
@@ -383,7 +609,6 @@ export default function LessonPage() {
               )}
               <div ref={chatEndRef} />
             </div>
-
             <div style={{ padding: "12px 16px", borderTop: "1px solid rgba(255,255,255,.06)", display: "flex", gap: 8, flexShrink: 0 }}>
               <input
                 value={aiInput}
@@ -392,9 +617,9 @@ export default function LessonPage() {
                 placeholder="Ask anything about this lesson..."
                 style={{
                   flex: 1, background: "rgba(255,255,255,.05)",
-                  border: "1px solid rgba(255,255,255,.1)",
-                  borderRadius: 8, padding: "10px 12px",
-                  fontFamily: "'DM Sans'", fontSize: 13, color: "#F8FAFC", outline: "none",
+                  border: "1px solid rgba(255,255,255,.1)", borderRadius: 8,
+                  padding: "10px 12px", fontFamily: "'DM Sans'", fontSize: 13,
+                  color: "#F8FAFC", outline: "none",
                 }}
               />
               <button onClick={sendAiMessage} disabled={aiLoading} style={{
@@ -406,79 +631,84 @@ export default function LessonPage() {
         )}
       </div>
 
+      {/* ── Bottom bar ── */}
+      <div style={{
+        height: 48, background: "#0F0F1A",
+        borderTop: "1px solid rgba(255,255,255,.06)",
+        display: "flex", alignItems: "center",
+        padding: "0 16px", gap: 10, flexShrink: 0,
+      }}>
+        {/* Prev */}
+        <button
+          onClick={() => prevLesson && goToLesson(prevLesson)}
+          disabled={!prevLesson}
+          style={{
+            width: 32, height: 32, borderRadius: 8,
+            border: "1px solid rgba(255,255,255,.08)",
+            background: "rgba(255,255,255,.04)",
+            color: prevLesson ? "#94A3B8" : "#2d2d3d",
+            cursor: prevLesson ? "pointer" : "not-allowed",
+            display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14,
+          }}
+        >
+          ←
+        </button>
+
+        {/* Next */}
+        <button
+          onClick={() => nextLesson && goToLesson(nextLesson)}
+          disabled={!nextLesson}
+          style={{
+            width: 32, height: 32, borderRadius: 8,
+            border: "1px solid rgba(255,255,255,.08)",
+            background: "rgba(255,255,255,.04)",
+            color: nextLesson ? "#94A3B8" : "#2d2d3d",
+            cursor: nextLesson ? "pointer" : "not-allowed",
+            display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14,
+          }}
+        >
+          →
+        </button>
+
+        {/* Lesson counter */}
+        <div style={{ flex: 1, textAlign: "center", fontFamily: "'DM Sans'", fontSize: 13, color: "#475569" }}>
+          LESSON <span style={{ fontWeight: 600, color: "#F8FAFC" }}>{lesson.order}</span> / {allLessons.length}
+        </div>
+
+        {/* Skip */}
+        <button
+          onClick={() => nextLesson ? goToLesson(nextLesson) : navigate("/track")}
+          style={{
+            background: "none", border: "none", padding: "4px 8px",
+            fontFamily: "'DM Sans'", fontSize: 12, color: "#475569", cursor: "pointer",
+          }}
+        >
+          Skip lesson
+        </button>
+
+        {/* Mark complete */}
+        <button
+          onClick={() => setTab("quiz")}
+          disabled={completing || completed}
+          style={{
+            display: "flex", alignItems: "center", gap: 6,
+            background: completed ? "#10B981" : "#6366F1",
+            color: "#fff", border: "none", borderRadius: 8,
+            padding: "8px 16px", cursor: completing || completed ? "not-allowed" : "pointer",
+            fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 12,
+            transition: "background .2s",
+          }}
+        >
+          {completed ? "✓ Completed" : "Take Quiz →"}
+        </button>
+      </div>
+
       <style>{`
         @keyframes bounce {
           0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-6px); }
+          50% { transform: translateY(-5px); }
         }
       `}</style>
-    </div>
-  );
-}
-
-function QuizPanel({ quiz, quizStep, selected, quizDone, score, onAnswer, onNext, navigate }) {
-  if (quizDone) return (
-    <div style={{ textAlign: "center", padding: "20px 0" }}>
-      <p style={{ fontSize: 48, marginBottom: 12 }}>{score === quiz.length ? "🎉" : score >= quiz.length / 2 ? "👍" : "📚"}</p>
-      <h3 style={{ fontFamily: "'Space Grotesk'", fontWeight: 700, fontSize: 20, color: "#F8FAFC", marginBottom: 8 }}>
-        {score}/{quiz.length} Correct
-      </h3>
-      <p style={{ fontFamily: "'DM Sans'", fontSize: 14, color: "#94A3B8", marginBottom: 24 }}>
-        {score === quiz.length ? "Perfect score! You nailed it." : score >= quiz.length / 2 ? "Good job! Keep going." : "Review the concept and try again."}
-      </p>
-      <button onClick={() => navigate("/dashboard")} style={{
-        background: "#6366F1", color: "#fff", border: "none",
-        borderRadius: 8, padding: "12px 24px", cursor: "pointer",
-        fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 13,
-      }}>
-        Back to Dashboard →
-      </button>
-    </div>
-  );
-
-  if (!quiz.length) return (
-    <p style={{ fontFamily: "'DM Sans'", fontSize: 13, color: "#475569" }}>No quiz for this lesson.</p>
-  );
-
-  const q = quiz[quizStep];
-  return (
-    <div>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
-        <span style={{ fontFamily: "'DM Sans'", fontSize: 12, color: "#475569" }}>Question {quizStep + 1} of {quiz.length}</span>
-        <span style={{ fontFamily: "'DM Sans'", fontSize: 12, color: "#6366F1" }}>{score} correct</span>
-      </div>
-      <h3 style={{ fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 15, color: "#F8FAFC", marginBottom: 16, lineHeight: 1.4 }}>
-        {q.q}
-      </h3>
-      {q.options.map((opt, i) => {
-        let bg = "rgba(255,255,255,.04)";
-        let border = "rgba(255,255,255,.1)";
-        let color = "#94A3B8";
-        if (selected !== null) {
-          if (i === q.answer) { bg = "rgba(16,185,129,.12)"; border = "#10B981"; color = "#10B981"; }
-          else if (i === selected) { bg = "rgba(239,68,68,.12)"; border = "#EF4444"; color = "#EF4444"; }
-        }
-        return (
-          <div key={i} onClick={() => onAnswer(i)} style={{
-            padding: "12px 14px", borderRadius: 8, marginBottom: 8,
-            background: bg, border: `1px solid ${border}`,
-            cursor: selected === null ? "pointer" : "default",
-            fontFamily: "'DM Sans'", fontSize: 13, color, transition: "all .15s",
-          }}>
-            {opt}
-          </div>
-        );
-      })}
-      {selected !== null && (
-        <button onClick={onNext} style={{
-          marginTop: 8, width: "100%", padding: "12px",
-          background: "#6366F1", color: "#fff", border: "none",
-          borderRadius: 8, cursor: "pointer",
-          fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 13,
-        }}>
-          {quizStep < quiz.length - 1 ? "Next Question →" : "See Results →"}
-        </button>
-      )}
     </div>
   );
 }
