@@ -31,6 +31,7 @@ export const api = {
 user: {
   me: () => request("/api/user/me"),
   leaderboard: () => request("/api/user/leaderboard"),
+  activity: () => request("/api/user/activity"),
 },
   tracks: {
     getLessons: (slug) => request(`/api/tracks/${slug}/lessons`),

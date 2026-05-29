@@ -26,6 +26,15 @@ export default function Dashboard() {
   const tablet = w >= 768 && w < 1024;
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [leaderboard, setLeaderboard] = useState([]);
+  const [activity, setActivity] = useState([]);
+
+useEffect(() => {
+  if (user) {
+    api.user.activity()
+      .then((data) => setActivity(data.activity))
+      .catch(console.error);
+  }
+}, [user]);
 
   useEffect(() => {
     if (!loading && !user) navigate("/login");
@@ -327,35 +336,37 @@ export default function Dashboard() {
               </span>
               <a href="#" style={{ fontFamily: "'DM Sans'", fontSize: 12, color: "#6366F1", textDecoration: "none" }}>VIEW HISTORY</a>
             </div>
-          {MOCK_ACTIVITY.length === 0 ? (
+   {activity.length === 0 ? (
   <div style={{ textAlign: "center", padding: "24px 0" }}>
     <p style={{ fontSize: 28, marginBottom: 8 }}>📭</p>
     <p style={{ fontFamily: "'DM Sans'", fontSize: 13, color: "#475569" }}>
       No activity yet. Complete your first lesson to get started.
     </p>
   </div>
-) : MOCK_ACTIVITY.map((a, i) => (
-  <div key={i} style={{
+) : activity.map((a, i) => (
+  <div key={a.id} style={{
     display: "flex", alignItems: "center", gap: 12, padding: "11px 0",
-    borderBottom: i < MOCK_ACTIVITY.length - 1 ? "1px solid rgba(255,255,255,.04)" : "none",
+    borderBottom: i < activity.length - 1 ? "1px solid rgba(255,255,255,.04)" : "none",
   }}>
     <div style={{
       width: 34, height: 34, borderRadius: 8, flexShrink: 0,
-      background: `${a.color}18`, border: `1px solid ${a.color}33`,
+      background: "rgba(99,102,241,.15)", border: "1px solid rgba(99,102,241,.3)",
       display: "flex", alignItems: "center", justifyContent: "center",
-      fontSize: 12, color: a.color,
+      fontSize: 14,
     }}>
-      {a.icon}
+      ✓
     </div>
     <div style={{ flex: 1, minWidth: 0 }}>
       <p style={{ fontFamily: "'DM Sans'", fontWeight: 500, fontSize: 13, color: "#F8FAFC", marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-        {a.title}
+        {a.lessonTitle}
       </p>
-      <p style={{ fontFamily: "'DM Sans'", fontSize: 11, color: "#475569" }}>{a.date}</p>
+      <p style={{ fontFamily: "'DM Sans'", fontSize: 11, color: "#475569" }}>
+        {a.trackName} · {new Date(a.completedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+      </p>
     </div>
     <div style={{ textAlign: "right", flexShrink: 0 }}>
-      <p style={{ fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 12, color: "#10B981" }}>{a.xp}</p>
-      <p style={{ fontFamily: "'DM Sans'", fontSize: 10, color: "#475569", letterSpacing: ".06em" }}>{a.tag}</p>
+      <p style={{ fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 12, color: "#10B981" }}>+{a.xpEarned} XP</p>
+      <p style={{ fontFamily: "'DM Sans'", fontSize: 10, color: "#475569", letterSpacing: ".06em" }}>LESSON {a.lessonOrder}</p>
     </div>
   </div>
 ))}
