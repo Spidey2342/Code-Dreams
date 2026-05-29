@@ -33,12 +33,13 @@ user: {
   leaderboard: () => request("/api/user/leaderboard"),
   activity: () => request("/api/user/activity"),
 },
-  tracks: {
-    getLessons: (slug) => request(`/api/tracks/${slug}/lessons`),
-    getLesson: (slug, id) => request(`/api/tracks/${slug}/lessons/${id}`),
-    completeLesson: (slug, id) =>
-      request(`/api/tracks/${slug}/lessons/${id}/complete`, { method: "POST" }),
-  },
+ tracks: {
+  getAll: () => request("/api/tracks"),
+  getLessons: (slug) => request(`/api/tracks/${slug}/lessons`),
+  getLesson: (slug, id) => request(`/api/tracks/${slug}/lessons/${id}`),
+  completeLesson: (slug, id) =>
+    request(`/api/tracks/${slug}/lessons/${id}/complete`, { method: "POST" }),
+},
   code: {
   run: (code, language = "python") =>
     request("/api/code/run", { method: "POST", body: JSON.stringify({ code, language }) }),

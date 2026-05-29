@@ -27,6 +27,13 @@ export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [leaderboard, setLeaderboard] = useState([]);
   const [activity, setActivity] = useState([]);
+  const [tracks, setTracks] = useState([]);
+
+useEffect(() => {
+  api.tracks.getAll()
+    .then((data) => setTracks(data))
+    .catch(console.error);
+}, []);
 
 useEffect(() => {
   if (user) {
