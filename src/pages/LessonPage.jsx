@@ -87,8 +87,8 @@ export default function LessonPage() {
     };
     fetchLesson();
   }, [lessonId, trackSlug]);
-      
-const isPython = lesson?.content?.language === "python" || lesson?.order > 10;
+
+
 
 const runCode = async () => {
   if (isPython) {
