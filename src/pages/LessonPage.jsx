@@ -36,6 +36,25 @@ export default function LessonPage() {
 const [running, setRunning] = useState(false);
 const [outputError, setOutputError] = useState(false);
   const chatEndRef = useRef(null);
+  const [pyodideReady, setPyodideReady] = useState(false);
+const pyodideRef = useRef(null);
+
+useEffect(() => {
+  if (!isPython) return;
+  const loadPyodide = async () => {
+    if (pyodideRef.current) return;
+    try {
+      const pyodide = await window.loadPyodide({
+        indexURL: "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/",
+      });
+      pyodideRef.current = pyodide;
+      setPyodideReady(true);
+    } catch (err) {
+      console.error("Failed to load Pyodide:", err);
+    }
+  };
+  loadPyodide();
+}, [isPython]);
 
   useEffect(() => {
     const fetchLesson = async () => {
@@ -63,37 +82,41 @@ const [outputError, setOutputError] = useState(false);
     fetchLesson();
   }, [lessonId, trackSlug]);
 
- const isPython = lesson?.content?.language === "python" || lesson?.order > 10;
+    
+const isPython = lesson?.content?.language === "python" || lesson?.order > 10;
 
 const runCode = async () => {
   if (isPython) {
     setRunning(true);
     setOutput("");
     setOutputError(false);
+    setShowPreview(true);
+
     try {
-      const result = await api.code.run(code, "python");
-      const out = result.output || result.stdout || "";
-      const err = result.stderr || "";
-      
-      if (err && !out) {
-        setOutput(err);
-        setOutputError(true);
-      } else if (out) {
-        setOutput(out);
-        setOutputError(false);
-      } else if (err && out) {
-        setOutput(out + "\n" + err);
-        setOutputError(false);
-      } else {
-        setOutput("Program ran with no output.");
-        setOutputError(false);
+      if (!pyodideRef.current) {
+        setOutput("Python is still loading... please wait a moment and try again.");
+        setRunning(false);
+        return;
       }
+
+      // Capture stdout
+      let captured = "";
+      pyodideRef.current.setStdout({
+        batched: (text) => { captured += text + "\n"; }
+      });
+      pyodideRef.current.setStderr({
+        batched: (text) => { captured += text + "\n"; }
+      });
+
+      await pyodideRef.current.runPythonAsync(code);
+
+      setOutput(captured.trim() || "Program ran with no output.");
+      setOutputError(false);
     } catch (err) {
-      setOutput("Failed to run code. Check your connection.");
+      setOutput(err.message || "An error occurred.");
       setOutputError(true);
     } finally {
       setRunning(false);
-      setShowPreview(true);
     }
   } else {
     setPreview(code);
