@@ -11,7 +11,7 @@ const NAV_ITEMS = [
   { icon: "▦", label: "Lessons", path: "/lessons" },
   { icon: "❐", label: "Projects", path: "/submit" },
   { icon: "⚑", label: "Leaderboard", path: "/leaderboard" },
-  { icon: "</>", label: "My Track", path: "/tracks" },
+  { icon: "</T>", label: "Other Tracks", path: "/tracks" },
   { icon: "✦", label: "Certificates", path: "/certificates" },
   { icon: "⚙", label: "Settings", path: "/settings" },
 ];
