@@ -259,9 +259,9 @@ const runCode = async () => {
             &lt;/&gt;
           </div>
           {!mob && (
-            <span style={{ fontFamily: "'DM Sans'", fontSize: 12, color: "#475569", letterSpacing: ".04em", textTransform: "uppercase" }}>
-              HTML & CSS Foundation
-            </span>
+           <span style={{ fontFamily: "'DM Sans'", fontSize: 12, color: "#475569", letterSpacing: ".04em", textTransform: "uppercase" }}>
+  {isPython ? "Python Fundamentals" : "HTML & CSS Foundation"}
+</span>
           )}
         </div>
 
@@ -670,11 +670,44 @@ const runCode = async () => {
       </div>
     ) : (
       <iframe
-        srcDoc={preview || `<html><body style="font-family:sans-serif;padding:16px;color:#666;display:flex;align-items:center;justify-content:center;height:80vh;margin:0;flex-direction:column;gap:8px"><p style="font-size:13px">Your output will appear here</p></body></html>`}
-        title="preview"
-        style={{ flex: 1, border: "none" }}
-        sandbox="allow-scripts"
-      />
+  srcDoc={preview ? `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          body { margin: 0; }
+          #error-bar {
+            display: none;
+            background: #1a0000;
+            border-bottom: 1px solid #ef4444;
+            padding: 8px 12px;
+            font-family: monospace;
+            font-size: 12px;
+            color: #ef4444;
+          }
+        </style>
+      </head>
+      <body>
+        <div id="error-bar"></div>
+        <iframe
+          id="inner"
+          srcDoc="${preview.replace(/`/g, '\\`').replace(/\$/g, '\\$')}"
+          style="width:100%;height:calc(100vh - 0px);border:none"
+        ></iframe>
+        <script>
+          window.onerror = function(msg, src, line, col) {
+            var bar = document.getElementById('error-bar');
+            bar.style.display = 'block';
+            bar.textContent = 'Error: ' + msg + ' (line ' + line + ')';
+          };
+        </script>
+      </body>
+    </html>
+  ` : `<html><body style="font-family:sans-serif;padding:16px;color:#666;display:flex;align-items:center;justify-content:center;height:80vh;margin:0"><p style="font-size:13px">Your output will appear here</p></body></html>`}
+  title="preview"
+  style={{ flex: 1, border: "none" }}
+  sandbox="allow-scripts"
+/>
     )}
   </div>
 )}
