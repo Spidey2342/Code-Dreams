@@ -525,7 +525,7 @@ export default function LessonPage() {
                 fontFamily: "'JetBrains Mono'", fontSize: 11, color: "#94A3B8",
               }}>
                 <span style={{ fontSize: 10 }}>📄</span>
-                {isPython ? "main.py" : lesson.order <= 5 ? "index.html" : "styles.css"}
+               {isPython ? "main.py" : "index.html"}
               </div>
               <div style={{ flex: 1 }} />
               <div style={{ display: "flex", alignItems: "center", gap: 5, fontFamily: "'DM Sans'", fontSize: 11, color: "#10B981" }}>
