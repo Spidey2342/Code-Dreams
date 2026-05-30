@@ -72,14 +72,23 @@ const runCode = async () => {
     setOutputError(false);
     try {
       const result = await api.code.run(code, "python");
-      if (result.stderr && !result.output) {
-        setOutput(result.stderr);
+      const out = result.output || result.stdout || "";
+      const err = result.stderr || "";
+      
+      if (err && !out) {
+        setOutput(err);
         setOutputError(true);
+      } else if (out) {
+        setOutput(out);
+        setOutputError(false);
+      } else if (err && out) {
+        setOutput(out + "\n" + err);
+        setOutputError(false);
       } else {
-        setOutput(result.output || "Program ran with no output.");
+        setOutput("Program ran with no output.");
         setOutputError(false);
       }
-    } catch {
+    } catch (err) {
       setOutput("Failed to run code. Check your connection.");
       setOutputError(true);
     } finally {
