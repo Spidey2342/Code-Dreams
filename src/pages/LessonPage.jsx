@@ -27,35 +27,41 @@ export default function LessonPage() {
   const [aiMessages, setAiMessages] = useState([]);
   const [aiInput, setAiInput] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
-  const [tab, setTab] = useState("concept"); // concept | quiz
+  const [tab, setTab] = useState("concept");
   const [quizStep, setQuizStep] = useState(0);
   const [selected, setSelected] = useState(null);
   const [quizDone, setQuizDone] = useState(false);
   const [score, setScore] = useState(0);
   const [output, setOutput] = useState("");
-const [running, setRunning] = useState(false);
-const [outputError, setOutputError] = useState(false);
-  const chatEndRef = useRef(null);
+  const [running, setRunning] = useState(false);
+  const [outputError, setOutputError] = useState(false);
   const [pyodideReady, setPyodideReady] = useState(false);
-const pyodideRef = useRef(null);
+  const chatEndRef = useRef(null);
+  const pyodideRef = useRef(null);
 
-useEffect(() => {
-  if (!isPython) return;
-  const loadPyodide = async () => {
+  // Derive isPython from trackSlug — don't wait for lesson to load
+  const isPython = trackSlug === "python-fundamentals";
+
+  // Load Pyodide for Python lessons
+  useEffect(() => {
+    if (!isPython) return;
     if (pyodideRef.current) return;
-    try {
-      const pyodide = await window.loadPyodide({
-        indexURL: "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/",
-      });
-      pyodideRef.current = pyodide;
-      setPyodideReady(true);
-    } catch (err) {
-      console.error("Failed to load Pyodide:", err);
-    }
-  };
-  loadPyodide();
-}, [isPython]);
+    const load = async () => {
+      try {
+        const pyodide = await window.loadPyodide({
+          indexURL: "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/",
+        });
+        pyodideRef.current = pyodide;
+        setPyodideReady(true);
+        console.log("Pyodide loaded successfully");
+      } catch (err) {
+        console.error("Failed to load Pyodide:", err);
+      }
+    };
+    load();
+  }, [isPython]);
 
+  // Load lesson
   useEffect(() => {
     const fetchLesson = async () => {
       try {
@@ -81,8 +87,7 @@ useEffect(() => {
     };
     fetchLesson();
   }, [lessonId, trackSlug]);
-
-    
+      
 const isPython = lesson?.content?.language === "python" || lesson?.order > 10;
 
 const runCode = async () => {
