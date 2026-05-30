@@ -39,10 +39,8 @@ export default function LessonPage() {
   const chatEndRef = useRef(null);
   const pyodideRef = useRef(null);
 
-  // Derive isPython from trackSlug — don't wait for lesson to load
   const isPython = trackSlug === "python-fundamentals";
 
-  // Load Pyodide for Python lessons
   useEffect(() => {
     if (!isPython) return;
     if (pyodideRef.current) return;
@@ -53,7 +51,6 @@ export default function LessonPage() {
         });
         pyodideRef.current = pyodide;
         setPyodideReady(true);
-        console.log("Pyodide loaded successfully");
       } catch (err) {
         console.error("Failed to load Pyodide:", err);
       }
@@ -61,7 +58,6 @@ export default function LessonPage() {
     load();
   }, [isPython]);
 
-  // Load lesson
   useEffect(() => {
     const fetchLesson = async () => {
       try {
@@ -88,46 +84,36 @@ export default function LessonPage() {
     fetchLesson();
   }, [lessonId, trackSlug]);
 
-
-
-const runCode = async () => {
-  if (isPython) {
-    setRunning(true);
-    setOutput("");
-    setOutputError(false);
-    setShowPreview(true);
-
-    try {
-      if (!pyodideRef.current) {
-        setOutput("Python is still loading... please wait a moment and try again.");
-        setRunning(false);
-        return;
-      }
-
-      // Capture stdout
-      let captured = "";
-      pyodideRef.current.setStdout({
-        batched: (text) => { captured += text + "\n"; }
-      });
-      pyodideRef.current.setStderr({
-        batched: (text) => { captured += text + "\n"; }
-      });
-
-      await pyodideRef.current.runPythonAsync(code);
-
-      setOutput(captured.trim() || "Program ran with no output.");
+  const runCode = async () => {
+    if (isPython) {
+      setRunning(true);
+      setOutput("");
       setOutputError(false);
-    } catch (err) {
-      setOutput(err.message || "An error occurred.");
-      setOutputError(true);
-    } finally {
-      setRunning(false);
+      setShowPreview(true);
+      try {
+        if (!pyodideRef.current) {
+          setOutput("Python is still loading... please wait a moment and try again.");
+          setRunning(false);
+          return;
+        }
+        let captured = "";
+        pyodideRef.current.setStdout({ batched: (text) => { captured += text + "\n"; } });
+        pyodideRef.current.setStderr({ batched: (text) => { captured += text + "\n"; } });
+        await pyodideRef.current.runPythonAsync(code);
+        setOutput(captured.trim() || "Program ran with no output.");
+        setOutputError(false);
+      } catch (err) {
+        setOutput(err.message || "An error occurred.");
+        setOutputError(true);
+      } finally {
+        setRunning(false);
+      }
+    } else {
+      setOutputError(false);
+      setPreview(code);
+      setShowPreview(true);
     }
-  } else {
-    setPreview(code);
-    setShowPreview(true);
-  }
-};
+  };
 
   const currentIndex = allLessons.findIndex((l) => l.id === lesson?.id);
   const prevLesson = currentIndex > 0 ? allLessons[currentIndex - 1] : null;
@@ -144,6 +130,7 @@ const runCode = async () => {
     setQuizDone(false);
     setScore(0);
     setPreview("");
+    setOutput("");
   };
 
   const completeLesson = async () => {
@@ -229,67 +216,63 @@ const runCode = async () => {
   return (
     <div style={{ height: "100vh", background: "#0A0A0F", display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
-      {/* ── Top bar ── */}
-<div style={{
-  height: 48, background: "#0F0F1A",
-  borderBottom: "1px solid rgba(255,255,255,.06)",
-  display: "flex", alignItems: "center",
-  padding: "0 16px", gap: 12, flexShrink: 0,
-}}>
-  {/* Back button */}
-  <button
-    onClick={() => navigate("/dashboard")}
-    style={{
-      background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.1)",
-      borderRadius: 8, padding: "5px 10px", cursor: "pointer",
-      fontFamily: "'DM Sans'", fontSize: 11, color: "#94A3B8",
-      display: "flex", alignItems: "center", gap: 4, flexShrink: 0,
-    }}
-  >
-    ← {!mob && "Dashboard"}
-  </button>
+      {/* Top bar */}
+      <div style={{
+        height: 48, background: "#0F0F1A",
+        borderBottom: "1px solid rgba(255,255,255,.06)",
+        display: "flex", alignItems: "center",
+        padding: "0 16px", gap: 12, flexShrink: 0,
+      }}>
+        <button
+          onClick={() => navigate("/dashboard")}
+          style={{
+            background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.1)",
+            borderRadius: 8, padding: "5px 10px", cursor: "pointer",
+            fontFamily: "'DM Sans'", fontSize: 11, color: "#94A3B8",
+            display: "flex", alignItems: "center", gap: 4, flexShrink: 0,
+          }}
+        >
+          ← {!mob && "Dashboard"}
+        </button>
 
-  {/* Left — track name */}
-  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{
-            width: 28, height: 28, borderRadius: 6, background: "#6366F1",
+            width: 28, height: 28, borderRadius: 6,
+            background: isPython ? "#3776AB" : "#6366F1",
             display: "flex", alignItems: "center", justifyContent: "center",
             fontFamily: "'JetBrains Mono'", fontSize: 10, color: "#fff",
           }}>
-            &lt;/&gt;
+            {isPython ? "🐍" : "</>"}
           </div>
           {!mob && (
-           <span style={{ fontFamily: "'DM Sans'", fontSize: 12, color: "#475569", letterSpacing: ".04em", textTransform: "uppercase" }}>
-  {isPython ? "Python Fundamentals" : "HTML & CSS Foundation"}
-</span>
+            <span style={{ fontFamily: "'DM Sans'", fontSize: 12, color: "#475569", letterSpacing: ".04em", textTransform: "uppercase" }}>
+              {isPython ? "Python Fundamentals" : "HTML & CSS Foundation"}
+            </span>
           )}
         </div>
 
         <div style={{ flex: 1 }} />
 
-        {/* Hearts */}
-<div style={{
-  display: "flex", alignItems: "center", gap: 4,
-  background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.08)",
-  borderRadius: 20, padding: "4px 10px",
-}}>
-  {[0, 1, 2].map((i) => (
-    <span key={i} style={{ fontSize: 12, opacity: i < hearts ? 1 : 0.2 }}>❤️</span>
-  ))}
-  {!mob && (
-    <span style={{ fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 11, color: "#94A3B8", marginLeft: 4 }}>
-      {hearts} LIVES LEFT
-    </span>
-  )}
-</div>
+        <div style={{
+          display: "flex", alignItems: "center", gap: 4,
+          background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.08)",
+          borderRadius: 20, padding: "4px 10px",
+        }}>
+          {[0, 1, 2].map((i) => (
+            <span key={i} style={{ fontSize: 12, opacity: i < hearts ? 1 : 0.2 }}>❤️</span>
+          ))}
+          {!mob && (
+            <span style={{ fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 11, color: "#94A3B8", marginLeft: 4 }}>
+              {hearts} LIVES LEFT
+            </span>
+          )}
+        </div>
 
-{/* Session XP */}
-<div style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: mob ? 11 : 12, color: "#10B981" }}>
-  <span>⭐</span>
-  <span>+{sessionXP}{!mob && " XP"}</span>
-</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: mob ? 11 : 12, color: "#10B981" }}>
+          <span>⭐</span>
+          <span>+{sessionXP}{!mob && " XP"}</span>
+        </div>
 
-        {/* Avatar */}
         <div style={{
           width: 28, height: 28, borderRadius: "50%",
           background: "linear-gradient(135deg, #6366F1, #a78bfa)",
@@ -300,22 +283,20 @@ const runCode = async () => {
         </div>
       </div>
 
-      {/* ── Body ── */}
+      {/* Body */}
       <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
 
-        {/* ── Left panel ── */}
-      {/* ── Left panel ── */}
-{(!mob || tab === "concept" || tab === "quiz") && (
-  <div style={{
-    width: mob ? "100%" : 320,
-    minWidth: mob ? "auto" : 320,
-    flexShrink: 0,
-    background: "#0F0F1A",
-    borderRight: mob ? "none" : "1px solid rgba(255,255,255,.06)",
-    display: "flex", flexDirection: "column",
-    overflow: "hidden",
-  }}>
-            {/* Tab switcher */}
+        {/* Left panel */}
+        {(!mob || tab === "concept" || tab === "quiz") && (
+          <div style={{
+            width: mob ? "100%" : 320,
+            minWidth: mob ? "auto" : 320,
+            flexShrink: 0,
+            background: "#0F0F1A",
+            borderRight: mob ? "none" : "1px solid rgba(255,255,255,.06)",
+            display: "flex", flexDirection: "column",
+            overflow: "hidden",
+          }}>
             <div style={{ display: "flex", borderBottom: "1px solid rgba(255,255,255,.06)", flexShrink: 0 }}>
               {["concept", "quiz"].map((t) => (
                 <button key={t} onClick={() => setTab(t)} style={{
@@ -341,20 +322,14 @@ const runCode = async () => {
               )}
             </div>
 
-            {/* Concept tab */}
             {tab === "concept" && (
               <div style={{ flex: 1, overflowY: "auto", padding: "18px 16px" }}>
-                {/* Module label */}
                 <p style={{ fontFamily: "'DM Sans'", fontSize: 10, letterSpacing: ".1em", color: "#475569", textTransform: "uppercase", marginBottom: 6 }}>
                   Current module
                 </p>
-
-                {/* Title */}
                 <h2 style={{ fontFamily: "'Space Grotesk'", fontWeight: 700, fontSize: 18, color: "#F8FAFC", marginBottom: 8, lineHeight: 1.3 }}>
                   Lesson {lesson.order} — {lesson.title}
                 </h2>
-
-                {/* XP badge */}
                 <div style={{
                   display: "inline-flex", alignItems: "center", gap: 5,
                   background: "rgba(16,185,129,.1)", border: "1px solid rgba(16,185,129,.2)",
@@ -364,7 +339,6 @@ const runCode = async () => {
                   ⭐ +{lesson.xpValue} XP on completion
                 </div>
 
-                {/* Concept text */}
                 {lesson.content.concept.split("\n\n").map((p, i) => (
                   <div key={i} style={{ marginBottom: 12 }}>
                     {p.includes("\n- ") || p.startsWith("- ") ? (
@@ -376,14 +350,11 @@ const runCode = async () => {
                         ))}
                       </ul>
                     ) : (
-                      <p style={{ fontFamily: "'DM Sans'", fontSize: 13, lineHeight: 1.7, color: "#94A3B8", margin: 0 }}>
-                        {p}
-                      </p>
+                      <p style={{ fontFamily: "'DM Sans'", fontSize: 13, lineHeight: 1.7, color: "#94A3B8", margin: 0 }}>{p}</p>
                     )}
                   </div>
                 ))}
 
-                {/* Key concepts */}
                 {keyConcepts.length > 0 && (
                   <div style={{
                     background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.07)",
@@ -411,35 +382,23 @@ const runCode = async () => {
                           }}>
                             {kc.code}
                           </code>
-                          <span style={{ fontFamily: "'DM Sans'", fontSize: 12, color: "#94A3B8" }}>
-                            — {kc.description}
-                          </span>
+                          <span style={{ fontFamily: "'DM Sans'", fontSize: 12, color: "#94A3B8" }}>— {kc.description}</span>
                         </div>
                       </div>
                     ))}
                   </div>
                 )}
 
-                {/* Exercise description */}
                 {exerciseDesc && (
                   <p style={{ fontFamily: "'DM Sans'", fontSize: 13, lineHeight: 1.65, color: "#94A3B8", marginBottom: 14 }}>
                     {exerciseDesc}
                   </p>
                 )}
 
-                {/* Diagram */}
                 {diagramLabel && (
-                  <div style={{
-                    border: "1px solid rgba(255,255,255,.07)", borderRadius: 10,
-                    overflow: "hidden", marginBottom: 14,
-                  }}>
-                    <div style={{
-                      background: "rgba(99,102,241,.06)", padding: "24px 16px",
-                      display: "flex", alignItems: "center", justifyContent: "center", minHeight: 80,
-                    }}>
-                      <span style={{ fontFamily: "'DM Sans'", fontSize: 12, color: "#475569", fontStyle: "italic" }}>
-                        {diagramLabel}
-                      </span>
+                  <div style={{ border: "1px solid rgba(255,255,255,.07)", borderRadius: 10, overflow: "hidden", marginBottom: 14 }}>
+                    <div style={{ background: "rgba(99,102,241,.06)", padding: "24px 16px", display: "flex", alignItems: "center", justifyContent: "center", minHeight: 80 }}>
+                      <span style={{ fontFamily: "'DM Sans'", fontSize: 12, color: "#475569", fontStyle: "italic" }}>{diagramLabel}</span>
                     </div>
                     <div style={{ padding: "5px 10px", borderTop: "1px solid rgba(255,255,255,.06)" }}>
                       <span style={{ fontFamily: "'DM Sans'", fontSize: 10, letterSpacing: ".06em", color: "#475569", textTransform: "uppercase" }}>
@@ -449,7 +408,6 @@ const runCode = async () => {
                   </div>
                 )}
 
-                {/* AI tutor button */}
                 <button
                   onClick={() => setAiOpen((o) => !o)}
                   style={{
@@ -467,7 +425,6 @@ const runCode = async () => {
               </div>
             )}
 
-            {/* Quiz tab */}
             {tab === "quiz" && (
               <div style={{ flex: 1, overflowY: "auto", padding: "18px 16px" }}>
                 {quizDone ? (
@@ -508,12 +465,8 @@ const runCode = async () => {
                 ) : (
                   <div>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
-                      <span style={{ fontFamily: "'DM Sans'", fontSize: 12, color: "#475569" }}>
-                        Question {quizStep + 1} of {quiz.length}
-                      </span>
-                      <span style={{ fontFamily: "'DM Sans'", fontSize: 12, color: "#10B981" }}>
-                        {score} correct
-                      </span>
+                      <span style={{ fontFamily: "'DM Sans'", fontSize: 12, color: "#475569" }}>Question {quizStep + 1} of {quiz.length}</span>
+                      <span style={{ fontFamily: "'DM Sans'", fontSize: 12, color: "#10B981" }}>{score} correct</span>
                     </div>
                     <h3 style={{ fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 15, color: "#F8FAFC", marginBottom: 16, lineHeight: 1.4 }}>
                       {quiz[quizStep].q}
@@ -554,207 +507,182 @@ const runCode = async () => {
           </div>
         )}
 
-  {/* ── Center — code editor ── */}
-{(!mob || tab === "code") && (
-  <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, background: "#0A0A0F" }}>
+        {/* Center — code editor */}
+        {(!mob || tab === "code") && (
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, background: "#0A0A0F" }}>
 
-    {/* Editor toolbar */}
-    <div style={{
-      height: 40, background: "#161B22",
-      borderBottom: "1px solid rgba(255,255,255,.06)",
-      display: "flex", alignItems: "center",
-      padding: "0 12px", gap: 10, flexShrink: 0,
-    }}>
-      <div style={{
-        display: "flex", alignItems: "center", gap: 6,
-        background: "#0F0F1A", border: "1px solid rgba(255,255,255,.1)",
-        borderRadius: "6px 6px 0 0", padding: "4px 10px",
-        fontFamily: "'JetBrains Mono'", fontSize: 11, color: "#94A3B8",
-      }}>
-       <span style={{ fontSize: 10 }}>📄</span>
-{isPython ? "main.py" : lesson.order <= 5 ? "index.html" : "styles.css"}
-      </div>
-      <div style={{ flex: 1 }} />
-      <div style={{ display: "flex", alignItems: "center", gap: 5, fontFamily: "'DM Sans'", fontSize: 11, color: "#10B981" }}>
-        <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#10B981" }} />
-        Autosaved
-      </div>
-      {!mob && (
-        <span style={{ fontFamily: "'DM Sans'", fontSize: 11, color: "#475569", letterSpacing: ".06em" }}>
-          PREVIEW
-        </span>
-      )}
-    </div>
+            {/* Editor toolbar */}
+            <div style={{
+              height: 40, background: "#161B22",
+              borderBottom: "1px solid rgba(255,255,255,.06)",
+              display: "flex", alignItems: "center",
+              padding: "0 12px", gap: 10, flexShrink: 0,
+            }}>
+              <div style={{
+                display: "flex", alignItems: "center", gap: 6,
+                background: "#0F0F1A", border: "1px solid rgba(255,255,255,.1)",
+                borderRadius: "6px 6px 0 0", padding: "4px 10px",
+                fontFamily: "'JetBrains Mono'", fontSize: 11, color: "#94A3B8",
+              }}>
+                <span style={{ fontSize: 10 }}>📄</span>
+                {isPython ? "main.py" : lesson.order <= 5 ? "index.html" : "styles.css"}
+              </div>
+              <div style={{ flex: 1 }} />
+              <div style={{ display: "flex", alignItems: "center", gap: 5, fontFamily: "'DM Sans'", fontSize: 11, color: "#10B981" }}>
+                <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#10B981" }} />
+                Autosaved
+              </div>
+              {!mob && (
+                <span style={{ fontFamily: "'DM Sans'", fontSize: 11, color: "#475569", letterSpacing: ".06em" }}>
+                  {isPython ? "TERMINAL" : "PREVIEW"}
+                </span>
+              )}
+            </div>
 
-    {/* Editor + preview */}
-    <div style={{ flex: 1, display: "flex", flexDirection: mob ? "column" : "row", overflow: "hidden" }}>
-      <div style={{
-        flex: showPreview && !mob ? "0 0 60%" : "1",
-        minWidth: 0, overflow: "hidden",
-        display: showPreview && mob ? "none" : "flex",
-        flexDirection: "column",
-      }}>
-        <Editor
-          height="100%"
-          defaultLanguage={isPython ? "python" : lesson.order <= 5 ? "html" : "css"}
-          theme="vs-dark"
-          value={code}
-          onChange={(v) => setCode(v || "")}
-          options={{
-            fontSize: mob ? 12 : 13,
-            minimap: { enabled: false },
-            lineNumbers: mob ? "off" : "on",
-            scrollBeyondLastLine: false,
-            wordWrap: "on",
-            padding: { top: 12 },
-            fontFamily: "'JetBrains Mono', monospace",
-          }}
-        />
-      </div>
-{showPreview && (
-  <div style={{
-    ...(mob ? {
-      position: "fixed", inset: 0, zIndex: 200,
-      display: "flex", flexDirection: "column",
-      background: isPython ? "#0D1117" : "#fff",
-    } : {
-      flex: "0 0 40%",
-      borderLeft: "1px solid rgba(255,255,255,.06)",
-      background: isPython ? "#0D1117" : "#fff",
-      display: "flex", flexDirection: "column",
-    }),
-  }}>
-    {/* Preview header */}
-    <div style={{
-      padding: "8px 12px",
-      borderBottom: `1px solid ${isPython ? "rgba(255,255,255,.08)" : "#eee"}`,
-      display: "flex", alignItems: "center", justifyContent: "space-between",
-      background: isPython ? "#161B22" : "#f8f8f8", flexShrink: 0,
-    }}>
-      <span style={{ fontSize: 11, color: isPython ? "#475569" : "#999", letterSpacing: ".06em", textTransform: "uppercase", fontFamily: "sans-serif" }}>
-        {isPython ? "Terminal Output" : "Live Preview"}
-      </span>
-      {mob ? (
-        <button onClick={() => setShowPreview(false)} style={{
-          background: "#ef4444", color: "#fff", border: "none",
-          borderRadius: 6, padding: "4px 12px", cursor: "pointer",
-          fontFamily: "sans-serif", fontSize: 12, fontWeight: 600,
-        }}>
-          ✕ Close
-        </button>
-      ) : (
-        <span style={{ fontSize: 11, color: isPython ? "#475569" : "#999", fontFamily: "sans-serif" }}>
-          {isPython ? "Python 3.10" : "Click RUN to update"}
-        </span>
-      )}
-    </div>
+            {/* Editor + output */}
+            <div style={{ flex: 1, display: "flex", flexDirection: mob ? "column" : "row", overflow: "hidden" }}>
+              <div style={{
+                flex: showPreview && !mob ? "0 0 60%" : "1",
+                minWidth: 0, overflow: "hidden",
+                display: showPreview && mob ? "none" : "flex",
+                flexDirection: "column",
+              }}>
+                <Editor
+                  height="100%"
+                  defaultLanguage={isPython ? "python" : lesson.order <= 5 ? "html" : "css"}
+                  theme="vs-dark"
+                  value={code}
+                  onChange={(v) => setCode(v || "")}
+                  options={{
+                    fontSize: mob ? 12 : 13,
+                    minimap: { enabled: false },
+                    lineNumbers: mob ? "off" : "on",
+                    scrollBeyondLastLine: false,
+                    wordWrap: "on",
+                    padding: { top: 12 },
+                    fontFamily: "'JetBrains Mono', monospace",
+                  }}
+                />
+              </div>
 
-    {/* Output area */}
-    {isPython ? (
-      <div style={{ flex: 1, overflowY: "auto", padding: 16, fontFamily: "'JetBrains Mono', monospace", fontSize: 13, lineHeight: 1.7 }}>
-        {running ? (
-          <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#475569" }}>
-            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#6366F1", animation: "bounce 1s ease infinite" }} />
-            Running...
+              {showPreview && (
+                <div style={{
+                  ...(mob ? {
+                    position: "fixed", inset: 0, zIndex: 200,
+                    display: "flex", flexDirection: "column",
+                    background: isPython ? "#0D1117" : "#fff",
+                  } : {
+                    flex: "0 0 40%",
+                    borderLeft: "1px solid rgba(255,255,255,.06)",
+                    background: isPython ? "#0D1117" : "#fff",
+                    display: "flex", flexDirection: "column",
+                  }),
+                }}>
+                  {/* Panel header */}
+                  <div style={{
+                    padding: "8px 12px",
+                    borderBottom: `1px solid ${isPython ? "rgba(255,255,255,.08)" : "#eee"}`,
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    background: isPython ? "#161B22" : "#f8f8f8", flexShrink: 0,
+                  }}>
+                    <span style={{ fontSize: 11, color: isPython ? "#475569" : "#999", letterSpacing: ".06em", textTransform: "uppercase", fontFamily: "sans-serif" }}>
+                      {isPython ? "Terminal Output" : "Live Preview"}
+                    </span>
+                    {mob ? (
+                      <button onClick={() => setShowPreview(false)} style={{
+                        background: "#ef4444", color: "#fff", border: "none",
+                        borderRadius: 6, padding: "4px 12px", cursor: "pointer",
+                        fontFamily: "sans-serif", fontSize: 12, fontWeight: 600,
+                      }}>
+                        ✕ Close
+                      </button>
+                    ) : (
+                      <span style={{ fontSize: 11, color: isPython ? "#475569" : "#999", fontFamily: "sans-serif" }}>
+                        {isPython ? "Python 3.10 (Pyodide)" : "Click RUN to update"}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Output */}
+                  {isPython ? (
+                    <div style={{ flex: 1, overflowY: "auto", padding: 16, background: "#0D1117", fontFamily: "'JetBrains Mono', monospace", fontSize: 13, lineHeight: 1.7 }}>
+                      {isPython && !pyodideReady && !running && (
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#475569", marginBottom: 8 }}>
+                          <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#F59E0B", animation: "bounce 1s ease infinite" }} />
+                          <span style={{ fontSize: 12 }}>Loading Python environment...</span>
+                        </div>
+                      )}
+                      {running ? (
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#475569" }}>
+                          <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#6366F1", animation: "bounce 1s ease infinite" }} />
+                          Running...
+                        </div>
+                      ) : output ? (
+                        <pre style={{
+                          margin: 0,
+                          color: outputError ? "#EF4444" : "#10B981",
+                          whiteSpace: "pre-wrap", wordBreak: "break-word",
+                        }}>
+                          {output}
+                        </pre>
+                      ) : (
+                        <span style={{ color: "#475569" }}>Click RUN to execute your Python code</span>
+                      )}
+                    </div>
+                  ) : (
+                    <iframe
+                      srcDoc={preview || `<html><body style="font-family:sans-serif;padding:16px;color:#666;display:flex;align-items:center;justify-content:center;height:80vh;margin:0;flex-direction:column;gap:8px"><p style="font-size:13px">Your output will appear here</p></body></html>`}
+                      title="preview"
+                      style={{ flex: 1, border: "none" }}
+                      sandbox="allow-scripts allow-same-origin"
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Run bar */}
+            <div style={{
+              height: 44, background: "#161B22",
+              borderTop: "1px solid rgba(255,255,255,.06)",
+              display: "flex", alignItems: "center",
+              padding: "0 12px", gap: 10, flexShrink: 0,
+            }}>
+              <span style={{ fontFamily: "'DM Sans'", fontSize: 11, color: "#475569", fontStyle: "italic", flex: 1 }}>
+                {mob ? (lesson.content.hint || "Edit then tap RUN") : (lesson.content.hint || "Edit the code and click Run to see the result")}
+              </span>
+              {!mob && (
+                <button
+                  onClick={() => setShowPreview((p) => !p)}
+                  style={{
+                    background: "rgba(255,255,255,.06)", color: "#94A3B8",
+                    border: "1px solid rgba(255,255,255,.1)", borderRadius: 6,
+                    padding: "5px 12px", cursor: "pointer",
+                    fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 11,
+                  }}
+                >
+                  {showPreview ? "Hide" : "Show"}
+                </button>
+              )}
+              <button
+                onClick={runCode}
+                disabled={running || (isPython && !pyodideReady)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 6,
+                  background: running || (isPython && !pyodideReady) ? "#475569" : "#10B981",
+                  color: "#fff", border: "none",
+                  borderRadius: 6, padding: "6px 16px",
+                  cursor: running || (isPython && !pyodideReady) ? "not-allowed" : "pointer",
+                  fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 11,
+                }}
+              >
+                {running ? "⏳ Running..." : isPython && !pyodideReady ? "⏳ Loading..." : "▶ RUN"}
+              </button>
+            </div>
           </div>
-        ) : output ? (
-          <pre style={{
-            margin: 0, color: outputError ? "#EF4444" : "#10B981",
-            whiteSpace: "pre-wrap", wordBreak: "break-word",
-          }}>
-            {output}
-          </pre>
-        ) : (
-          <span style={{ color: "#475569" }}>Click RUN to execute your Python code</span>
         )}
-      </div>
-    ) : (
-      <iframe
-  srcDoc={preview ? `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <style>
-          body { margin: 0; }
-          #error-bar {
-            display: none;
-            background: #1a0000;
-            border-bottom: 1px solid #ef4444;
-            padding: 8px 12px;
-            font-family: monospace;
-            font-size: 12px;
-            color: #ef4444;
-          }
-        </style>
-      </head>
-      <body>
-        <div id="error-bar"></div>
-        <iframe
-          id="inner"
-          srcDoc="${preview.replace(/`/g, '\\`').replace(/\$/g, '\\$')}"
-          style="width:100%;height:calc(100vh - 0px);border:none"
-        ></iframe>
-        <script>
-          window.onerror = function(msg, src, line, col) {
-            var bar = document.getElementById('error-bar');
-            bar.style.display = 'block';
-            bar.textContent = 'Error: ' + msg + ' (line ' + line + ')';
-          };
-        </script>
-      </body>
-    </html>
-  ` : `<html><body style="font-family:sans-serif;padding:16px;color:#666;display:flex;align-items:center;justify-content:center;height:80vh;margin:0"><p style="font-size:13px">Your output will appear here</p></body></html>`}
-  title="preview"
-  style={{ flex: 1, border: "none" }}
-  sandbox="allow-scripts"
-/>
-    )}
-  </div>
-)}
-    </div>
 
-    {/* Run bar */}
-    <div style={{
-      height: 44, background: "#161B22",
-      borderTop: "1px solid rgba(255,255,255,.06)",
-      display: "flex", alignItems: "center",
-      padding: "0 12px", gap: 10, flexShrink: 0,
-    }}>
-      <span style={{ fontFamily: "'DM Sans'", fontSize: 11, color: "#475569", fontStyle: "italic", flex: 1 }}>
-        {mob ? (lesson.content.hint || "Edit then tap RUN") : (lesson.content.hint || "Edit the code and click Run to see the result")}
-      </span>
-      {!mob && (
-        <button
-          onClick={() => setShowPreview((p) => !p)}
-          style={{
-            background: "rgba(255,255,255,.06)", color: "#94A3B8",
-            border: "1px solid rgba(255,255,255,.1)", borderRadius: 6,
-            padding: "5px 12px", cursor: "pointer",
-            fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 11,
-          }}
-        >
-          {showPreview ? "Hide Preview" : "Show Preview"}
-        </button>
-      )}
-     <button
-  onClick={runCode}
-  disabled={running || (isPython && !pyodideReady)}
-  style={{
-    display: "flex", alignItems: "center", gap: 6,
-    background: running || (isPython && !pyodideReady) ? "#475569" : "#10B981",
-    color: "#fff", border: "none",
-    borderRadius: 6, padding: "6px 16px",
-    cursor: running || (isPython && !pyodideReady) ? "not-allowed" : "pointer",
-    fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 11,
-  }}
->
-  {running ? "⏳ Running..." : isPython && !pyodideReady ? "⏳ Loading Python..." : "▶ RUN"}
-</button>
-    </div>
-
-  </div>
-)}
-        {/* ── AI Tutor panel ── */}
+        {/* AI Tutor panel */}
         {aiOpen && !mob && (
           <div style={{
             width: 300, flexShrink: 0, background: "#0F0F1A",
@@ -819,14 +747,13 @@ const runCode = async () => {
         )}
       </div>
 
-      {/* ── Bottom bar ── */}
+      {/* Bottom bar */}
       <div style={{
         height: 48, background: "#0F0F1A",
         borderTop: "1px solid rgba(255,255,255,.06)",
         display: "flex", alignItems: "center",
         padding: "0 16px", gap: 10, flexShrink: 0,
       }}>
-        {/* Prev */}
         <button
           onClick={() => prevLesson && goToLesson(prevLesson)}
           disabled={!prevLesson}
@@ -838,11 +765,8 @@ const runCode = async () => {
             cursor: prevLesson ? "pointer" : "not-allowed",
             display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14,
           }}
-        >
-          ←
-        </button>
+        >←</button>
 
-        {/* Next */}
         <button
           onClick={() => nextLesson && goToLesson(nextLesson)}
           disabled={!nextLesson}
@@ -854,16 +778,12 @@ const runCode = async () => {
             cursor: nextLesson ? "pointer" : "not-allowed",
             display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14,
           }}
-        >
-          →
-        </button>
+        >→</button>
 
-        {/* Lesson counter */}
         <div style={{ flex: 1, textAlign: "center", fontFamily: "'DM Sans'", fontSize: 13, color: "#475569" }}>
           LESSON <span style={{ fontWeight: 600, color: "#F8FAFC" }}>{lesson.order}</span> / {allLessons.length}
         </div>
 
-        {/* Skip */}
         <button
           onClick={() => nextLesson ? goToLesson(nextLesson) : navigate("/track")}
           style={{
@@ -874,7 +794,6 @@ const runCode = async () => {
           Skip lesson
         </button>
 
-        {/* Mark complete */}
         <button
           onClick={() => setTab("quiz")}
           disabled={completing || completed}
