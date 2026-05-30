@@ -543,8 +543,8 @@ const runCode = async () => {
         borderRadius: "6px 6px 0 0", padding: "4px 10px",
         fontFamily: "'JetBrains Mono'", fontSize: 11, color: "#94A3B8",
       }}>
-        <span style={{ fontSize: 10 }}>📄</span>
-        {lesson.order <= 5 ? "index.html" : "styles.css"}
+       <span style={{ fontSize: 10 }}>📄</span>
+{isPython ? "main.py" : lesson.order <= 5 ? "index.html" : "styles.css"}
       </div>
       <div style={{ flex: 1 }} />
       <div style={{ display: "flex", alignItems: "center", gap: 5, fontFamily: "'DM Sans'", fontSize: 11, color: "#10B981" }}>
@@ -568,7 +568,7 @@ const runCode = async () => {
       }}>
         <Editor
           height="100%"
-          defaultLanguage={lesson.order <= 5 ? "html" : "css"}
+          defaultLanguage={isPython ? "python" : lesson.order <= 5 ? "html" : "css"}
           theme="vs-dark"
           value={code}
           onChange={(v) => setCode(v || "")}
