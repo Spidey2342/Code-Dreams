@@ -699,16 +699,18 @@ const runCode = async () => {
         </button>
       )}
      <button
-  onClick={() => { runCode(); }}
-  disabled={running}
+  onClick={runCode}
+  disabled={running || (isPython && !pyodideReady)}
   style={{
     display: "flex", alignItems: "center", gap: 6,
-    background: running ? "#475569" : "#10B981", color: "#fff", border: "none",
-    borderRadius: 6, padding: "6px 16px", cursor: running ? "not-allowed" : "pointer",
+    background: running || (isPython && !pyodideReady) ? "#475569" : "#10B981",
+    color: "#fff", border: "none",
+    borderRadius: 6, padding: "6px 16px",
+    cursor: running || (isPython && !pyodideReady) ? "not-allowed" : "pointer",
     fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 11,
   }}
 >
-  {running ? "⏳ Running..." : "▶ RUN"}
+  {running ? "⏳ Running..." : isPython && !pyodideReady ? "⏳ Loading Python..." : "▶ RUN"}
 </button>
     </div>
 
