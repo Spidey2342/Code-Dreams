@@ -811,7 +811,7 @@ const isLocked = lesson?.locked === true;
     .then(r => r.json())
     .then(data => {
       const url = data.authorization_url || data.authorizationUrl;
-      if (url) window.location.href = url;
+  if (url) window.location.href = url;
       else console.error("No URL returned:", data);
     })
     .catch(err => console.error("Payment error:", err));
