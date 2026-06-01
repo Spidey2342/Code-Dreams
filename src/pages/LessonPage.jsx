@@ -408,20 +408,39 @@ const isLocked = lesson?.locked === true;
                   </div>
                 )}
 
-                <button
-                  onClick={() => setAiOpen((o) => !o)}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 8,
-                    padding: "10px 14px", border: "1px solid rgba(255,255,255,.08)",
-                    borderRadius: 10, cursor: "pointer",
-                    fontFamily: "'DM Sans'", fontSize: 13, color: "#94A3B8",
-                    background: aiOpen ? "rgba(99,102,241,.1)" : "transparent",
-                    width: "100%", textAlign: "left", transition: "all .15s",
-                  }}
-                >
-                  <span style={{ fontSize: 16 }}>🤖</span>
-                  Ask AI tutor for hint
-                </button>
+               <button
+  onClick={() => {
+    if (!lesson?.isPro && allLessons.some(l => l.locked)) {
+      // Non-pro user — show upgrade message in AI panel instead
+      setAiOpen(true);
+      setAiMessages([{
+        role: "ai",
+        text: "🔒 The AI Tutor is a Pro feature. Upgrade to Pro for GHS 80/month to get 24/7 help on any lesson, project review, and your certificate."
+      }]);
+    } else {
+      setAiOpen((o) => !o);
+    }
+  }}
+  style={{
+    display: "flex", alignItems: "center", gap: 8,
+    padding: "10px 14px", border: "1px solid rgba(255,255,255,.08)",
+    borderRadius: 10, cursor: "pointer",
+    fontFamily: "'DM Sans'", fontSize: 13, color: "#94A3B8",
+    background: aiOpen ? "rgba(99,102,241,.1)" : "transparent",
+    width: "100%", textAlign: "left", transition: "all .15s",
+  }}
+>
+  <span style={{ fontSize: 16 }}>🤖</span>
+  Ask AI tutor for hint
+  {allLessons.some(l => l.locked) && (
+    <span style={{
+      marginLeft: "auto", fontSize: 10, fontWeight: 700,
+      background: "rgba(99,102,241,0.15)", color: "#a78bfa",
+      border: "1px solid rgba(99,102,241,0.3)",
+      borderRadius: 4, padding: "2px 6px", letterSpacing: "0.06em"
+    }}>PRO</span>
+  )}
+</button>
               </div>
             )}
 
@@ -779,24 +798,49 @@ const isLocked = lesson?.locked === true;
               )}
               <div ref={chatEndRef} />
             </div>
-            <div style={{ padding: "12px 16px", borderTop: "1px solid rgba(255,255,255,.06)", display: "flex", gap: 8, flexShrink: 0 }}>
-              <input
-                value={aiInput}
-                onChange={(e) => setAiInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && sendAiMessage()}
-                placeholder="Ask anything about this lesson..."
-                style={{
-                  flex: 1, background: "rgba(255,255,255,.05)",
-                  border: "1px solid rgba(255,255,255,.1)", borderRadius: 8,
-                  padding: "10px 12px", fontFamily: "'DM Sans'", fontSize: 13,
-                  color: "#F8FAFC", outline: "none",
-                }}
-              />
-              <button onClick={sendAiMessage} disabled={aiLoading} style={{
-                background: "#6366F1", border: "none", borderRadius: 8,
-                width: 40, cursor: "pointer", color: "#fff", fontSize: 16, flexShrink: 0,
-              }}>↑</button>
-            </div>
+           <div style={{ padding: "12px 16px", borderTop: "1px solid rgba(255,255,255,.06)", flexShrink: 0 }}>
+  {allLessons.some(l => l.locked) ? (
+    <button
+      onClick={() => {
+        const token = localStorage.getItem("codepath_token");
+        fetch(`${import.meta.env.VITE_API_URL || "http://localhost:3001"}/api/payments/initialize`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ plan: "monthly" }),
+        })
+          .then(r => r.json())
+          .then(data => { if (data.authorization_url) window.location.href = data.authorization_url; });
+      }}
+      style={{
+        width: "100%", background: "#6366F1", color: "#fff",
+        border: "none", borderRadius: 8, padding: "12px",
+        fontFamily: "'Space Grotesk'", fontWeight: 700, fontSize: 13,
+        cursor: "pointer",
+      }}
+    >
+      Upgrade to Pro — GHS 80/month →
+    </button>
+  ) : (
+    <div style={{ display: "flex", gap: 8 }}>
+      <input
+        value={aiInput}
+        onChange={(e) => setAiInput(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && sendAiMessage()}
+        placeholder="Ask anything about this lesson..."
+        style={{
+          flex: 1, background: "rgba(255,255,255,.05)",
+          border: "1px solid rgba(255,255,255,.1)", borderRadius: 8,
+          padding: "10px 12px", fontFamily: "'DM Sans'", fontSize: 13,
+          color: "#F8FAFC", outline: "none",
+        }}
+      />
+      <button onClick={sendAiMessage} disabled={aiLoading} style={{
+        background: "#6366F1", border: "none", borderRadius: 8,
+        width: 40, cursor: "pointer", color: "#fff", fontSize: 16, flexShrink: 0,
+      }}>↑</button>
+    </div>
+  )}
+</div>
           </div>
         )}
       </div>
