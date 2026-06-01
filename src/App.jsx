@@ -11,6 +11,8 @@ import CertificatePage from "./pages/CertificatePage";
 import TracksPage from "./pages/TracksPage";
 import SettingsPage from "./pages/SettingsPage";
 import VerifyPage from "./pages/VerifyPage";
+import TermsPage from "./pages/TermsPage";
+import PrivacyPage from "./pages/PrivacyPage";
 import PricingPage from "./pages/PricingPage";
 import { ProtectedRoute, PublicRoute } from "./components/ui/ProtectedRoute";
 
@@ -64,6 +66,8 @@ function App() {
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/verify/:code" element={<VerifyPage />} />
         <Route path="/payment/success" element={<PaymentSuccess />} />
+        <Route path="/terms" element={<TermsPage />} />
+<Route path="/privacy" element={<PrivacyPage />} />
 
         {/* Auth pages — redirect to dashboard if logged in */}
         <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
