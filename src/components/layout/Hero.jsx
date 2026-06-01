@@ -54,7 +54,7 @@ export default function Hero() {
             </p>
 
             {/* CTA buttons */}
-            // Replace the CTA buttons
+           
 <div className="aFadeUp heroCta" style={{ animationDelay: ".35s", display: "flex", gap: 12, marginBottom: 36, flexWrap: "wrap" }}>
   <button className="btnP"
     onClick={() => window.location.href = "/signup"}
@@ -79,7 +79,6 @@ export default function Hero() {
   </button>
 </div>
 
-// Replace social proof
 <div className="aFadeUp heroSocial" style={{ animationDelay: ".45s", display: "flex", alignItems: "center", gap: 12 }}>
   <div style={{ display: "flex" }}>
     {["#6366F1", "#F59E0B", "#10B981", "#3B82F6"].map((c, i) => (
