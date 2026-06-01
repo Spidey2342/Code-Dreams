@@ -260,7 +260,7 @@ useEffect(() => {
         }}>
           {[
             { value: user.totalXP.toLocaleString(), label: "EXPERIENCE POINTS", color: "#F59E0B" },
-            { value: "#—", label: "LEADERBOARD RANK", color: "#F8FAFC" },
+            { value: leaderboard.find(e => e.isYou)?.rank ? `#${leaderboard.find(e => e.isYou).rank}` : "#—", label: "LEADERBOARD RANK", color: "#F8FAFC" },
             { value: user.completedLessons, label: "COMPLETED LESSONS", color: "#F8FAFC" },
             { value: `${user.currentStreak} 🔥`, label: "DAY STREAK", color: "#F59E0B" },
           ].map((stat) => (
