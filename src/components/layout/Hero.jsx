@@ -34,7 +34,7 @@ export default function Hero() {
             <h1 className="aFadeUp h1Size" style={{
               animationDelay: ".15s",
               fontFamily: "'Space Grotesk'", fontWeight: 700,
-              lineHeight: 1.06, letterSpacing: "-2px", marginBottom: 20,
+              lineHeight: 1.06, letterSpacing: "clamp(-1px, -0.05em, -2px)", marginBottom: 20,
             }}>
               <span style={{ color: "#F8FAFC" }}>Your journey to</span><br />
               <span className="gradText">becoming</span><br />

@@ -1,6 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
 html { scroll-behavior: smooth; }
 body {
   background: #0A0A0F;
@@ -161,27 +165,32 @@ p.navLink { cursor: pointer; }
 }
 
 /* ── Mobile (< 768px) ── */
+/* ── Mobile (< 768px) ── */
 @media (max-width: 767px) {
   .deskLinks { display: none !important; }
   .deskAuth  { display: none !important; }
   .burger    { display: flex !important; }
-   .heroCodeCol { display: none; } 
+  .heroCodeCol { display: none; }
 
   .heroGrid   { gap: 36px; }
-  .stepsGrid  { display: grid; grid-template-columns: repeat(3, minmax(200px, 1fr)); gap: 24px; }
-.tracksGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+
+  /* Fix horizontal overflow on steps and tracks */
+  .stepsGrid  { display: flex; flex-direction: column; gap: 14px; }
+  .tracksGrid { display: flex; flex-direction: column; gap: 14px; }
+
   .footerGrid { grid-template-columns: 1fr; gap: 28px; margin-bottom: 40px; }
   .footerBrand { grid-column: auto; }
   .footerBottom { flex-direction: column; gap: 14px; text-align: center; }
 
-  .h1Size  { font-size: 36px; letter-spacing: -1px !important; }
-  .h2Size  { font-size: 26px; }
+  /* Smaller headline that fits */
+  .h1Size  { font-size: 32px !important; letter-spacing: -0.5px !important; line-height: 1.15 !important; }
+  .h2Size  { font-size: 24px; }
+
   .pHero   { padding: 48px 20px 64px; }
   .pSec    { padding: 56px 20px; }
   .pNav    { padding: 0 20px; }
   .pFooter { padding: 48px 20px 24px; }
 }
-
 /* ── Wide (> 1280px) ── */
 @media (min-width: 1281px) {
   .h1Size { font-size: 76px; }
