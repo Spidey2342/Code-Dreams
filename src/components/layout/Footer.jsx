@@ -47,16 +47,17 @@ export default function Footer() {
               © 2026 CODEPATH. ALL RIGHTS RESERVED.
             </p>
             <div style={{ display: "flex", gap: 24 }}>
-              {["TERMS", "PRIVACY"].map((l) => (
-                <a
-                  key={l} href="#"
-                  style={{ fontFamily: "'DM Sans'", fontSize: 12, color: "#475569", textDecoration: "none", letterSpacing: "0.06em", transition: "color .2s" }}
-                  onMouseOver={(e) => (e.target.style.color = "#94A3B8")}
-                  onMouseOut={(e) => (e.target.style.color = "#475569")}
-                >
-                  {l}
-                </a>
-              ))}
+           {["TERMS", "PRIVACY"].map((l) => (
+  <a
+    key={l}
+    href={l === "TERMS" ? "/terms" : "/privacy"}
+    style={{ fontFamily: "'DM Sans'", fontSize: 12, color: "#475569", textDecoration: "none", letterSpacing: "0.06em", transition: "color .2s" }}
+    onMouseOver={(e) => (e.target.style.color = "#94A3B8")}
+    onMouseOut={(e) => (e.target.style.color = "#475569")}
+  >
+    {l}
+  </a>
+))}
             </div>
           </div>
         </div>

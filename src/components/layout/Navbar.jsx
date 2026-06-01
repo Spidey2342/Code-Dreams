@@ -86,13 +86,15 @@ const navigate = useNavigate()
               display: "flex", flexDirection: "column", gap: 4,
             }}
           >
-          {["Tracks", "Features", "Pricing"].map((l) => (
-              <a key={l} href={l === "Pricing" ? "/pricing" : "#"} className="navLink"
-                style={{ padding: "12px 0", fontSize: 15, borderBottom: "1px solid rgba(255,255,255,.04)" }}
-              >
-                {l}
-              </a>
-            ))}
+         {["Tracks", "Features", "Pricing"].map((l) => (
+  <a
+    key={l}
+    href={l === "Pricing" ? "/pricing" : l === "Tracks" ? "/tracks" : "#features"}
+    className="navLink"
+  >
+    {l}
+  </a>
+))}
             <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
               <a
                 href="/login"
