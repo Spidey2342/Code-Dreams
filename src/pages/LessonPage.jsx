@@ -40,7 +40,7 @@ export default function LessonPage() {
   const pyodideRef = useRef(null);
 
   const isPython = trackSlug === "python-fundamentals";
-
+const isLocked = lesson?.locked === true;
   useEffect(() => {
     if (!isPython) return;
     if (pyodideRef.current) return;
@@ -339,7 +339,7 @@ export default function LessonPage() {
                   ⭐ +{lesson.xpValue} XP on completion
                 </div>
 
-                {lesson.content.concept.split("\n\n").map((p, i) => (
+                {(lesson.content?.concept || "").split("\n\n").map((p, i) => (
                   <div key={i} style={{ marginBottom: 12 }}>
                     {p.includes("\n- ") || p.startsWith("- ") ? (
                       <ul style={{ paddingLeft: 16, margin: 0 }}>
@@ -508,9 +508,63 @@ export default function LessonPage() {
         )}
 
         {/* Center — code editor */}
-        {(!mob || tab === "code") && (
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, background: "#0A0A0F" }}>
+      {/* Center — code editor */}
+{(!mob || tab === "code") && (
+  <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, background: "#0A0A0F", position: "relative" }}>
 
+    {/* Paywall overlay */}
+    {isLocked && (
+      <div style={{
+        position: "absolute", inset: 0, zIndex: 50,
+        background: "rgba(10,10,15,0.95)",
+        backdropFilter: "blur(8px)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        flexDirection: "column", padding: 32, textAlign: "center",
+      }}>
+        <div style={{ fontSize: 48, marginBottom: 16 }}>🔒</div>
+        <h2 style={{ fontFamily: "'Space Grotesk'", fontWeight: 700, fontSize: 22, color: "#F8FAFC", marginBottom: 10 }}>
+          Lesson {lesson.order} is Pro Only
+        </h2>
+        <p style={{ fontFamily: "'DM Sans'", fontSize: 15, color: "#94A3B8", marginBottom: 24, maxWidth: 360, lineHeight: 1.6 }}>
+          You've completed {allLessons.filter(l => l.completed).length} of 18 free lessons. Unlock the final 12 lessons, AI tutor, and your certificate.
+        </p>
+        <div style={{
+          background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.2)",
+          borderRadius: 14, padding: "20px 24px", marginBottom: 24, width: "100%", maxWidth: 360,
+        }}>
+          <p style={{ fontFamily: "'Space Grotesk'", fontWeight: 800, fontSize: 32, color: "#F8FAFC", marginBottom: 16 }}>
+            GHS 80<span style={{ fontSize: 14, fontWeight: 400, color: "#94A3B8" }}>/month</span>
+          </p>
+          {["✅ Lessons 19–30 in all tracks", "✅ AI Tutor — ask anything 24/7", "✅ Project submission + AI review", "✅ Verified certificate on completion"].map((item, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, textAlign: "left" }}>
+              <span style={{ fontFamily: "'DM Sans'", fontSize: 14, color: "#94A3B8" }}>{item}</span>
+            </div>
+          ))}
+        </div>
+        <button
+          onClick={() => {
+            const token = localStorage.getItem("codepath_token");
+            fetch(`${import.meta.env.VITE_API_URL || "http://localhost:3001"}/api/payments/initialize`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+              body: JSON.stringify({ plan: "monthly" }),
+            })
+              .then(r => r.json())
+              .then(data => { if (data.authorization_url) window.location.href = data.authorization_url; });
+          }}
+          style={{
+            background: "#6366F1", color: "#fff", border: "none", borderRadius: 10,
+            padding: "14px 0", cursor: "pointer", fontFamily: "'Space Grotesk'",
+            fontWeight: 700, fontSize: 15, width: "100%", maxWidth: 360,
+          }}
+        >
+          Unlock Pro — GHS 80/month →
+        </button>
+        <p style={{ fontFamily: "'DM Sans'", fontSize: 12, color: "#475569", marginTop: 12 }}>
+          Cancel anytime · Secure payment via Paystack
+        </p>
+      </div>
+    )}
             {/* Editor toolbar */}
             <div style={{
               height: 40, background: "#161B22",
@@ -649,7 +703,7 @@ export default function LessonPage() {
               padding: "0 12px", gap: 10, flexShrink: 0,
             }}>
               <span style={{ fontFamily: "'DM Sans'", fontSize: 11, color: "#475569", fontStyle: "italic", flex: 1 }}>
-                {mob ? (lesson.content.hint || "Edit then tap RUN") : (lesson.content.hint || "Edit the code and click Run to see the result")}
+                {mob ? (lesson.content?.hint || "Edit then tap RUN") : (lesson.content?.hint || "Edit the code and click Run to see the results")}
               </span>
               {!mob && (
                 <button
