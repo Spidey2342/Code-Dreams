@@ -51,10 +51,11 @@ function InputField({ label, type = "text", placeholder, icon, rightEl, value, o
   );
 }
 
-function OAuthButton({ imgSrc, label }) {
+function OAuthButton({ imgSrc, label, href }) {
   const [hovered, setHovered] = useState(false);
   return (
-    <button
+    <a
+      href={href}
       onMouseOver={() => setHovered(true)}
       onMouseOut={() => setHovered(false)}
       style={{
@@ -64,15 +65,15 @@ function OAuthButton({ imgSrc, label }) {
         borderRadius: 8, padding: "12px 16px", cursor: "pointer",
         fontFamily: "'Space Grotesk'", fontWeight: 600,
         fontSize: 13, letterSpacing: "0.08em", color: "#F8FAFC",
+        textDecoration: "none",
         transition: "background 0.2s, border-color 0.2s",
       }}
     >
       <img src={imgSrc} alt={label} style={{ width: 18, height: 18, objectFit: "contain" }} />
       {label}
-    </button>
+    </a>
   );
 }
-
 function Checkbox({ checked, onChange, children }) {
   return (
     <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
@@ -186,9 +187,17 @@ export default function AuthFormPanel({ variant = "login" }) {
         </p>
 
         <div style={{ display: "flex", gap: 12, marginBottom: 24 }}>
-          <OAuthButton imgSrc={githubImg} label="GITHUB" />
-          <OAuthButton imgSrc={googleImg} label="GOOGLE" />
-        </div>
+  <OAuthButton
+    imgSrc={githubImg}
+    label="GITHUB"
+    href={`${import.meta.env.VITE_API_URL || "http://localhost:3001"}/api/auth/github`}
+  />
+  <OAuthButton
+    imgSrc={googleImg}
+    label="GOOGLE"
+    href={`${import.meta.env.VITE_API_URL || "http://localhost:3001"}/api/auth/google`}
+  />
+</div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 24 }}>
           <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />

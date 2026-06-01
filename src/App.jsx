@@ -12,6 +12,7 @@ import TracksPage from "./pages/TracksPage";
 import SettingsPage from "./pages/SettingsPage";
 import VerifyPage from "./pages/VerifyPage";
 import TermsPage from "./pages/TermsPage";
+import AuthCallback from "./pages/AuthCallback";
 import PrivacyPage from "./pages/PrivacyPage";
 import PricingPage from "./pages/PricingPage";
 import { ProtectedRoute, PublicRoute } from "./components/ui/ProtectedRoute";
@@ -68,6 +69,7 @@ function App() {
         <Route path="/payment/success" element={<PaymentSuccess />} />
         <Route path="/terms" element={<TermsPage />} />
 <Route path="/privacy" element={<PrivacyPage />} />
+<Route path="/auth/callback" element={<AuthCallback />} />
 
         {/* Auth pages — redirect to dashboard if logged in */}
         <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
