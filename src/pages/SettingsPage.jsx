@@ -236,16 +236,21 @@ export default function SettingsPage() {
             </button>
           ) : (
             <button
-              onClick={() => {
-                const token = localStorage.getItem("codepath_token");
-                fetch(`${import.meta.env.VITE_API_URL || "http://localhost:3001"}/api/payments/initialize`, {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-                  body: JSON.stringify({ plan: "monthly" }),
-                })
-                  .then(r => r.json())
-                  .then(data => { if (data.authorization_url) window.location.href = data.authorization_url; });
-              }}
+             onClick={() => {
+  const token = localStorage.getItem("codepath_token");
+  fetch(`${import.meta.env.VITE_API_URL || "http://localhost:3001"}/api/payments/initialize`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ plan: "monthly" }),
+  })
+    .then(r => r.json())
+    .then(data => {
+      const url = data.authorization_url || data.authorizationUrl;
+      if (url) window.location.href = url;
+      else console.error("No URL returned:", data);
+    })
+    .catch(err => console.error("Payment error:", err));
+}}
               style={s.btn}
             >
               Upgrade to Pro — GHS 80/month →
