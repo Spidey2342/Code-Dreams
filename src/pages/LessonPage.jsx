@@ -298,7 +298,7 @@ const isLocked = lesson?.locked === true;
             overflow: "hidden",
           }}>
             <div style={{ display: "flex", borderBottom: "1px solid rgba(255,255,255,.06)", flexShrink: 0 }}>
-              {["concept", "quiz"].map((t) => (
+             {["concept", ...(isLocked ? [] : ["quiz"])].map((t) => (
                 <button key={t} onClick={() => setTab(t)} style={{
                   flex: 1, padding: "12px 0", background: "transparent", border: "none",
                   borderBottom: tab === t ? "2px solid #6366F1" : "2px solid transparent",
@@ -897,19 +897,19 @@ const isLocked = lesson?.locked === true;
           Skip lesson
         </button>
 
-        <button
-          onClick={() => setTab("quiz")}
-          disabled={completing || completed}
+       <button
+  onClick={() => !isLocked && setTab("quiz")}
+  disabled={completing || completed || isLocked}
           style={{
             display: "flex", alignItems: "center", gap: 6,
-            background: completed ? "#10B981" : "#6366F1",
+           background: isLocked ? "#475569" : completed ? "#10B981" : "#6366F1",
             color: "#fff", border: "none", borderRadius: 8,
-            padding: "8px 16px", cursor: completing || completed ? "not-allowed" : "pointer",
+            padding: "8px 16px",  cursor: isLocked || completing || completed ? "not-allowed" : "pointer",
             fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 12,
             transition: "background .2s",
           }}
         >
-          {completed ? "✓ Completed" : "Take Quiz →"}
+         {isLocked ? "🔒 Pro Only" : completed ? "✓ Completed" : "Take Quiz →"}
         </button>
       </div>
 
