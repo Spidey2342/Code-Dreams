@@ -30,6 +30,37 @@ export default function Dashboard() {
   const [activity, setActivity] = useState([]);
   const [tracks, setTracks] = useState([]);
 
+  // Detect active track from activity
+const activeTrack = (() => {
+  if (activity.length === 0) return {
+    name: "HTML & CSS Foundation",
+    slug: "html-css",
+    icon: "🌐",
+    totalLessons: 30,
+  };
+  
+  // Count lessons per track
+  const trackCounts = {};
+  activity.forEach(a => {
+    if (!trackCounts[a.trackName]) trackCounts[a.trackName] = { count: 0, name: a.trackName };
+    trackCounts[a.trackName].count++;
+  });
+  
+  const mostActive = Object.values(trackCounts).sort((a, b) => b.count - a.count)[0];
+  const isPython = mostActive.name.toLowerCase().includes("python");
+  
+  return {
+    name: mostActive.name,
+    slug: isPython ? "python-fundamentals" : "html-css",
+    icon: isPython ? "🐍" : "🌐",
+    totalLessons: 30,
+  };
+})();
+
+const trackLessonsCompleted = activity.filter(a => 
+  a.trackName === activeTrack.name
+).length;
+  
 useEffect(() => {
   api.tracks.getAll()
     .then((data) => setTracks(data))
@@ -279,51 +310,60 @@ useEffect(() => {
         </div>
 
         {/* Current track */}
-        <div style={{
-          background: "#0F0F1A", border: "1px solid rgba(255,255,255,.07)",
-          borderRadius: 12, padding: mob ? "18px" : "24px 28px", marginBottom: 20,
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#F59E0B" }} />
-            <span style={{ fontFamily: "'DM Sans'", fontSize: 11, fontWeight: 600, letterSpacing: ".1em", color: "#94A3B8" }}>
-              CURRENT TRACK
-            </span>
-          </div>
-          <h2 style={{ fontFamily: "'Space Grotesk'", fontWeight: 700, fontSize: mob ? 18 : 24, color: "#F8FAFC", marginBottom: 12 }}>
-            HTML & CSS Foundation
-          </h2>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, flexWrap: "wrap", gap: 4 }}>
-            <span style={{ fontFamily: "'DM Sans'", fontSize: 13, color: "#94A3B8" }}>
-              Lesson {user.completedLessons + 1} of 30
-            </span>
-            <span style={{ fontFamily: "'JetBrains Mono'", fontSize: 12, color: "#6366F1" }}>
-              {Math.round((user.completedLessons / 30) * 100)}% Complete
-            </span>
-          </div>
-          <div style={{ height: 6, background: "rgba(255,255,255,.08)", borderRadius: 3, marginBottom: 16 }}>
-            <div style={{
-              height: "100%", borderRadius: 3,
-              background: "linear-gradient(90deg, #F59E0B, #F97316)",
-              width: `${Math.min((user.completedLessons / 30) * 100, 100)}%`,
-            }} />
-          </div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, paddingRight: 4 }}>
-  <span style={{ fontFamily: "'DM Sans'", fontSize: 12, color: "#94A3B8" }}>
-    🏁 {10 - (user.completedLessons % 10)} lessons until Project Checkpoint
-  </span>
-  <button
-   onClick={() => navigate("/lessons?track=html-css")}
-    style={{
-      background: "#6366F1", color: "#fff", border: "none",
-      borderRadius: 8, padding: "11px 24px", cursor: "pointer",
-      fontFamily: "'Space Grotesk'", fontWeight: 600,
-      fontSize: 13, letterSpacing: ".06em", whiteSpace: "nowrap",
-      marginRight: 4,
-    }}
-  >
-    CONTINUE →
-  </button>
-</div>
+      {/* Current track */}
+<div style={{
+  background: "#0F0F1A", border: "1px solid rgba(255,255,255,.07)",
+  borderRadius: 12, padding: mob ? "18px" : "24px 28px", marginBottom: 20,
+}}>
+  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+    <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#F59E0B" }} />
+    <span style={{ fontFamily: "'DM Sans'", fontSize: 11, fontWeight: 600, letterSpacing: ".1em", color: "#94A3B8" }}>
+      CURRENT TRACK
+    </span>
+  </div>
+
+  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+    <span style={{ fontSize: 28 }}>{activeTrack.icon}</span>
+    <h2 style={{ fontFamily: "'Space Grotesk'", fontWeight: 700, fontSize: mob ? 18 : 24, color: "#F8FAFC" }}>
+      {activeTrack.name}
+    </h2>
+  </div>
+
+  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, flexWrap: "wrap", gap: 4 }}>
+    <span style={{ fontFamily: "'DM Sans'", fontSize: 13, color: "#94A3B8" }}>
+      Lesson {trackLessonsCompleted + 1} of {activeTrack.totalLessons}
+    </span>
+    <span style={{ fontFamily: "'JetBrains Mono'", fontSize: 12, color: "#6366F1" }}>
+      {Math.round((trackLessonsCompleted / activeTrack.totalLessons) * 100)}% Complete
+    </span>
+  </div>
+
+  <div style={{ height: 6, background: "rgba(255,255,255,.08)", borderRadius: 3, marginBottom: 16 }}>
+    <div style={{
+      height: "100%", borderRadius: 3,
+      background: "linear-gradient(90deg, #F59E0B, #F97316)",
+      width: `${Math.min((trackLessonsCompleted / activeTrack.totalLessons) * 100, 100)}%`,
+      transition: "width .4s ease",
+    }} />
+  </div>
+
+  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, paddingRight: 4 }}>
+    <span style={{ fontFamily: "'DM Sans'", fontSize: 12, color: "#94A3B8" }}>
+      🏁 {Math.max(0, 10 - (trackLessonsCompleted % 10))} lessons until Project Checkpoint
+    </span>
+    <button
+      onClick={() => navigate(`/lessons?track=${activeTrack.slug}`)}
+      style={{
+        background: "#6366F1", color: "#fff", border: "none",
+        borderRadius: 8, padding: "11px 24px", cursor: "pointer",
+        fontFamily: "'Space Grotesk'", fontWeight: 600,
+        fontSize: 13, letterSpacing: ".06em", whiteSpace: "nowrap",
+      }}
+    >
+      CONTINUE →
+    </button>
+  </div>
+
         </div>
 
         {/* Bottom — activity + leaderboard */}
