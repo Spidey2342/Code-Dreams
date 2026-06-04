@@ -38,6 +38,7 @@ export default function LessonPage() {
   const [pyodideReady, setPyodideReady] = useState(false);
   const chatEndRef = useRef(null);
   const pyodideRef = useRef(null);
+const [currentUser, setCurrentUser] = useState(null);
 
   const isPython = trackSlug === "python-fundamentals";
 const isLocked = lesson?.locked === true;
@@ -84,7 +85,18 @@ const isLocked = lesson?.locked === true;
     fetchLesson();
   }, [lessonId, trackSlug]);
 
-  const runCode = async () => {
+
+  
+useEffect(() => {
+  const token = localStorage.getItem("codepath_token");
+  fetch(`${import.meta.env.VITE_API_URL || "http://localhost:3001"}/api/user/me`, {
+    headers: { Authorization: `Bearer ${token}` }
+  }).then(r => r.json()).then(data => setCurrentUser(data));
+}, []);
+
+
+
+const runCode = async () => {
     if (isPython) {
       setRunning(true);
       setOutput("");
@@ -122,7 +134,7 @@ const isLocked = lesson?.locked === true;
   const goToLesson = (l) => {
     navigate(`/lessons?track=${trackSlug}&id=${l.id}`);
     setLesson(l);
-    setCode(l.content.exercise || "");
+   setCode(l.content?.exercise || "");
     setCompleted(l.completed);
     setTab("concept");
     setQuizStep(0);
@@ -273,14 +285,14 @@ const isLocked = lesson?.locked === true;
           <span>+{sessionXP}{!mob && " XP"}</span>
         </div>
 
-        <div style={{
-          width: 28, height: 28, borderRadius: "50%",
-          background: "linear-gradient(135deg, #6366F1, #a78bfa)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontFamily: "'Space Grotesk'", fontWeight: 700, fontSize: 11, color: "#fff",
-        }}>
-          M
-        </div>
+      <div style={{
+  width: 28, height: 28, borderRadius: "50%",
+  background: "linear-gradient(135deg, #6366F1, #a78bfa)",
+  display: "flex", alignItems: "center", justifyContent: "center",
+  fontFamily: "'Space Grotesk'", fontWeight: 700, fontSize: 11, color: "#fff",
+}}>
+  {currentUser?.name?.charAt(0).toUpperCase() || "?"}
+</div>
       </div>
 
       {/* Body */}
