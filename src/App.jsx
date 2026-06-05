@@ -9,6 +9,8 @@ import LessonPage from "./pages/LessonPage";
 import SubmitPage from "./pages/SubmitPage";
 import CertificatePage from "./pages/CertificatePage";
 import TracksPage from "./pages/TracksPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import SettingsPage from "./pages/SettingsPage";
 import VerifyPage from "./pages/VerifyPage";
 import TermsPage from "./pages/TermsPage";
@@ -71,6 +73,8 @@ function App() {
         <Route path="/terms" element={<TermsPage />} />
 <Route path="/privacy" element={<PrivacyPage />} />
 <Route path="/auth/callback" element={<AuthCallback />} />
+<Route path="/forgot-password" element={<ForgotPasswordPage />} />
+<Route path="/reset-password" element={<ResetPasswordPage />} />
 
         {/* Auth pages — redirect to dashboard if logged in */}
         <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />

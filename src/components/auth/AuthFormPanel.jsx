@@ -234,13 +234,13 @@ export default function AuthFormPanel({ variant = "login" }) {
               PASSWORD
             </label>
             {isLogin && (
-              <a href="#" style={{
+              <Link to="/forgot-password" style={{
                 fontFamily: "'Space Grotesk'", fontWeight: 600,
                 fontSize: 12, letterSpacing: "0.08em", textTransform: "uppercase",
                 color: "#6366F1", textDecoration: "none",
               }}>
                 FORGOT PASSWORD?
-              </a>
+              </Link>
             )}
           </div>
           <InputField
