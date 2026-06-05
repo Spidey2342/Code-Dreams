@@ -15,6 +15,7 @@ import TermsPage from "./pages/TermsPage";
 import AuthCallback from "./pages/AuthCallback";
 import PrivacyPage from "./pages/PrivacyPage";
 import PricingPage from "./pages/PricingPage";
+import LeaderboardPage from "./pages/LeaderboardPage";
 import { ProtectedRoute, PublicRoute } from "./components/ui/ProtectedRoute";
 
 function PaymentSuccess() {
@@ -83,6 +84,7 @@ function App() {
         <Route path="/certificates" element={<ProtectedRoute><CertificatePage /></ProtectedRoute>} />
         <Route path="/tracks" element={<ProtectedRoute><TracksPage /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+        <Route path="/leaderboard" element={<ProtectedRoute><LeaderboardPage /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );
