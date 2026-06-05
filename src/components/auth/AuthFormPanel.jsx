@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Moon, Settings, Mail, Lock, Eye, EyeOff, User } from "lucide-react";
 import { useWidth } from "../../hooks/useWidth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import googleImg from "../../assets/search.png";
 import githubImg from "../../assets/github.png";
+
 
 function InputField({ label, type = "text", placeholder, icon, rightEl, value, onChange }) {
   const [focused, setFocused] = useState(false);
