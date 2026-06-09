@@ -84,7 +84,7 @@ function App() {
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/track" element={<ProtectedRoute><TrackPage /></ProtectedRoute>} />
         <Route path="/lessons" element={<ProtectedRoute><LessonPage /></ProtectedRoute>} />
-        <Route path="/submit" element={<ProtectedRoute><SubmitPage /></ProtectedRoute>} />
+        <Route path="/submit/:trackSlug/:order" element={<ProtectedRoute><SubmitPage /></ProtectedRoute>} />
         <Route path="/certificates" element={<ProtectedRoute><CertificatePage /></ProtectedRoute>} />
         <Route path="/tracks" element={<ProtectedRoute><TracksPage /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />

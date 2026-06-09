@@ -1,14 +1,19 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useWidth } from "../hooks/useWidth";
 import Logo from "../components/ui/Logo";
+import { getProject } from "../lib/projects";
 
 export default function SubmitPage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const w = useWidth();
   const mob = w < 768;
+
+  // Which project is this? Comes from the URL: /submit/:trackSlug/:order
+  const { trackSlug, order } = useParams();
+  const project = getProject(trackSlug, order);
 
   const [githubUrl, setGithubUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -18,6 +23,10 @@ export default function SubmitPage() {
 
   const handleSubmit = async () => {
     setError("");
+    if (!project) {
+      setError("Could not load this project. Go back to the track and try again.");
+      return;
+    }
     if (!githubUrl.trim()) {
       setError("Please enter your GitHub repository URL");
       return;
@@ -40,9 +49,10 @@ export default function SubmitPage() {
           },
           body: JSON.stringify({
             githubUrl,
-            trackId: "html-css",
-            projectTitle: "Developer Profile Page",
-            requirements: "A complete HTML & CSS developer profile page with: heading, bio paragraph, skills list, links, contact form, and consistent styling.",
+            trackId: project.trackId,
+            projectTitle: project.title,
+            // Send requirements as a single string for the AI reviewer
+            requirements: project.requirements.join("; "),
           }),
         }
       );
@@ -93,7 +103,32 @@ export default function SubmitPage() {
 
       <div style={{ maxWidth: 680, margin: "0 auto", padding: mob ? "28px 16px" : "48px 24px" }}>
 
-        {!submitted ? (
+        {/* No project found for this URL */}
+        {!project ? (
+          <div style={{
+            background: "#0F0F1A", border: "1px solid rgba(255,255,255,.07)",
+            borderRadius: 12, padding: "32px", textAlign: "center",
+          }}>
+            <p style={{ fontSize: 40, marginBottom: 12 }}>🧭</p>
+            <h1 style={{
+              fontFamily: "'Space Grotesk'", fontWeight: 700, fontSize: 22,
+              color: "#F8FAFC", marginBottom: 8,
+            }}>
+              Project not found
+            </h1>
+            <p style={{ fontFamily: "'DM Sans'", fontSize: 14, color: "#94A3B8", marginBottom: 24 }}>
+              We couldn't find a project for this checkpoint. Head back to your track and open the
+              project from there.
+            </p>
+            <Link to="/track" style={{
+              display: "inline-block", background: "#6366F1", color: "#fff",
+              textDecoration: "none", padding: "12px 24px", borderRadius: 8,
+              fontFamily: "'Space Grotesk'", fontWeight: 600, fontSize: 13,
+            }}>
+              Back to Track
+            </Link>
+          </div>
+        ) : !submitted ? (
           <>
             {/* Header */}
             <div style={{ marginBottom: 32 }}>
@@ -111,10 +146,10 @@ export default function SubmitPage() {
                 fontSize: mob ? 24 : 32, color: "#F8FAFC",
                 letterSpacing: "-1px", marginBottom: 8,
               }}>
-                Developer Profile Page
+                {project.title}
               </h1>
               <p style={{ fontFamily: "'DM Sans'", fontSize: 14, color: "#94A3B8", lineHeight: 1.7 }}>
-                Build a complete developer profile page using everything you've learned in the HTML & CSS track. Submit your GitHub repository link for AI review.
+                {project.description}
               </p>
             </div>
 
@@ -130,23 +165,15 @@ export default function SubmitPage() {
               }}>
                 Requirements
               </p>
-              {[
-                { icon: "📝", text: "Your name and job title as the main heading" },
-                { icon: "👤", text: "A short bio paragraph about yourself" },
-                { icon: "💡", text: "A skills section using an unordered list" },
-                { icon: "🔗", text: "Links to your GitHub and LinkedIn profiles" },
-                { icon: "📬", text: "A working contact form with name, email, and message fields" },
-                { icon: "🎨", text: "Consistent CSS styling throughout the page" },
-                { icon: "📱", text: "Clean layout using Flexbox" },
-              ].map((req, i) => (
+              {project.requirements.map((req, i) => (
                 <div key={i} style={{
                   display: "flex", alignItems: "flex-start", gap: 12,
                   padding: "10px 0",
-                  borderBottom: i < 6 ? "1px solid rgba(255,255,255,.04)" : "none",
+                  borderBottom: i < project.requirements.length - 1 ? "1px solid rgba(255,255,255,.04)" : "none",
                 }}>
-                  <span style={{ fontSize: 16, flexShrink: 0 }}>{req.icon}</span>
+                  <span style={{ color: "#6366F1", fontSize: 15, flexShrink: 0, lineHeight: 1.4 }}>▸</span>
                   <span style={{ fontFamily: "'DM Sans'", fontSize: 14, color: "#94A3B8", lineHeight: 1.5 }}>
-                    {req.text}
+                    {req}
                   </span>
                 </div>
               ))}
@@ -162,12 +189,7 @@ export default function SubmitPage() {
                 💡 TIPS
               </p>
               <ul style={{ paddingLeft: 16, margin: 0 }}>
-                {[
-                  "Push your project to a public GitHub repository",
-                  "Make sure your HTML file is named index.html",
-                  "Test your page in the browser before submitting",
-                  "Your AI reviewer will check for all requirements above",
-                ].map((tip, i) => (
+                {project.tips.map((tip, i) => (
                   <li key={i} style={{ fontFamily: "'DM Sans'", fontSize: 13, color: "#94A3B8", marginBottom: 6, lineHeight: 1.5 }}>
                     {tip}
                   </li>

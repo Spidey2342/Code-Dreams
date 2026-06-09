@@ -29,7 +29,8 @@ export default function Dashboard() {
   const [leaderboard, setLeaderboard] = useState([]);
   const [activity, setActivity] = useState([]);
   const [tracks, setTracks] = useState([]);
-
+const [myRank, setMyRank] = useState(null);
+const topDevs = leaderboard.slice(0, 10);
   // Detect active track from activity
 const activeTrack = (() => {
   if (activity.length === 0) return {
@@ -38,6 +39,13 @@ const activeTrack = (() => {
     icon: "🌐",
     totalLessons: 30,
   };
+  useEffect(() => {
+  if (user) {
+    api.user.leaderboard()
+      .then((data) => { setLeaderboard(data.leaderboard); setMyRank(data.currentUser?.rank ?? null); })
+      .catch(console.error);
+  }
+}, [user]);
   
   // Count lessons per track
   const trackCounts = {};
@@ -291,7 +299,7 @@ useEffect(() => {
         }}>
           {[
             { value: user.totalXP.toLocaleString(), label: "EXPERIENCE POINTS", color: "#F59E0B" },
-            { value: leaderboard.find(e => e.isYou)?.rank ? `#${leaderboard.find(e => e.isYou).rank}` : "#—", label: "LEADERBOARD RANK", color: "#F8FAFC" },
+            { value: myRank ? `#${myRank}` : "#—", label: "LEADERBOARD RANK", color: "#F8FAFC" },
             { value: user.completedLessons, label: "COMPLETED LESSONS", color: "#F8FAFC" },
             { value: `${user.currentStreak} 🔥`, label: "DAY STREAK", color: "#F59E0B" },
           ].map((stat) => (

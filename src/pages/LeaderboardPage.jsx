@@ -4,17 +4,21 @@ import { api } from "../lib/api";
 
 export default function LeaderboardPage() {
   const navigate = useNavigate();
-  const [leaderboard, setLeaderboard] = useState([]);
-  const [loading, setLoading] = useState(true);
+const [leaderboard, setLeaderboard] = useState([]);
+const [currentUser, setCurrentUser] = useState(null);
+const [totalUsers, setTotalUsers] = useState(0);
+const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    api.user.leaderboard()
-      .then(data => setLeaderboard(data.leaderboard))
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
-
-  const medals = ["🥇", "🥈", "🥉"];
+useEffect(() => {
+  api.user.leaderboard()
+    .then(data => {
+      setLeaderboard(data.leaderboard);
+      setCurrentUser(data.currentUser);
+      setTotalUsers(data.totalUsers);
+    })
+    .catch(console.error)
+    .finally(() => setLoading(false));
+}, []);  const medals = ["🥇", "🥈", "🥉"];
 
   return (
     <div style={{ minHeight: "100vh", background: "#0A0A0F", color: "#F8FAFC", fontFamily: "'DM Sans'" }}>
@@ -164,17 +168,56 @@ export default function LeaderboardPage() {
         </div>
 
         {/* Your rank if not in top 10 */}
-        {!loading && leaderboard.length > 0 && !leaderboard.find(e => e.isYou) && (
-          <div style={{
-            marginTop: 16, background: "rgba(99,102,241,.08)",
-            border: "1px solid rgba(99,102,241,.2)", borderRadius: 10,
-            padding: "14px 20px", textAlign: "center",
-          }}>
-            <p style={{ fontFamily: "'DM Sans'", fontSize: 14, color: "#94A3B8" }}>
-              You're not in the top 10 yet. Keep completing lessons to climb the ranks! 🚀
-            </p>
-          </div>
-        )}
+     {/* Your position — only when you're outside the visible list */}
+{!loading && currentUser && !leaderboard.some(e => e.isYou) && (
+  <div style={{ marginTop: 20 }}>
+    <p style={{ fontFamily: "'DM Sans'", fontSize: 10, fontWeight: 600, letterSpacing: ".08em", color: "#475569", marginBottom: 8, paddingLeft: 4 }}>
+      YOUR POSITION
+    </p>
+    <div style={{
+      display: "grid", gridTemplateColumns: "48px 1fr 80px",
+      alignItems: "center", padding: "14px 20px",
+      background: "rgba(99,102,241,.1)",
+      border: "1px solid rgba(99,102,241,.3)", borderRadius: 14,
+    }}>
+      <span style={{ fontFamily: "'JetBrains Mono'", fontSize: 13, fontWeight: 700, color: "#6366F1" }}>
+        #{currentUser.rank}
+      </span>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+        <div style={{
+          width: 32, height: 32, borderRadius: "50%", flexShrink: 0,
+          background: "linear-gradient(135deg,#6366F1,#a78bfa)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontFamily: "'Space Grotesk'", fontWeight: 700, fontSize: 12, color: "#fff",
+        }}>
+          {currentUser.name.charAt(0).toUpperCase()}
+        </div>
+        <p style={{ fontFamily: "'DM Sans'", fontSize: 14, fontWeight: 600, color: "#F8FAFC", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {currentUser.name} (You)
+        </p>
+      </div>
+      <span style={{ fontFamily: "'Space Grotesk'", fontWeight: 700, fontSize: 14, color: "#6366F1", textAlign: "right" }}>
+        {currentUser.totalXP.toLocaleString()}
+      </span>
+    </div>
+    <p style={{ fontFamily: "'DM Sans'", fontSize: 13, color: "#94A3B8", textAlign: "center", marginTop: 12 }}>
+      You're #{currentUser.rank} of {totalUsers}. Keep completing lessons to climb! 🚀
+    </p>
+  </div>
+)}
+
+{/* Not yet ranked (no XP) */}
+{!loading && !currentUser && leaderboard.length > 0 && (
+  <div style={{
+    marginTop: 16, background: "rgba(99,102,241,.08)",
+    border: "1px solid rgba(99,102,241,.2)", borderRadius: 10,
+    padding: "14px 20px", textAlign: "center",
+  }}>
+    <p style={{ fontFamily: "'DM Sans'", fontSize: 14, color: "#94A3B8" }}>
+      Complete your first lesson to join the leaderboard! 🚀
+    </p>
+  </div>
+)}
 
       </div>
     </div>
