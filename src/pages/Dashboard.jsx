@@ -39,13 +39,7 @@ const activeTrack = (() => {
     icon: "🌐",
     totalLessons: 30,
   };
-  useEffect(() => {
-  if (user) {
-    api.user.leaderboard()
-      .then((data) => { setLeaderboard(data.leaderboard); setMyRank(data.currentUser?.rank ?? null); })
-      .catch(console.error);
-  }
-}, [user]);
+
   
   // Count lessons per track
   const trackCounts = {};
@@ -64,6 +58,13 @@ const activeTrack = (() => {
     totalLessons: 30,
   };
 })();
+  useEffect(() => {
+  if (user) {
+    api.user.leaderboard()
+      .then((data) => { setLeaderboard(data.leaderboard); setMyRank(data.currentUser?.rank ?? null); })
+      .catch(console.error);
+  }
+}, [user]);
 
 const trackLessonsCompleted = activity.filter(a => 
   a.trackName === activeTrack.name
@@ -87,13 +88,7 @@ useEffect(() => {
     if (!loading && !user) navigate("/login");
   }, [user, loading, navigate]);
 
-  useEffect(() => {
-  if (user) {
-    api.user.leaderboard()
-      .then((data) => setLeaderboard(data.leaderboard))
-      .catch(console.error);
-  }
-}, [user]);
+
 
   // close sidebar on resize to desktop
   useEffect(() => {
@@ -444,20 +439,21 @@ useEffect(() => {
                 <span key={h} style={{ fontFamily: "'DM Sans'", fontSize: 10, fontWeight: 600, letterSpacing: ".08em", color: "#475569" }}>{h}</span>
               ))}
             </div>
-            {leaderboard.length === 0 ? (
+            {topDevs.length === 0 ? (
   <div style={{ textAlign: "center", padding: "20px 0" }}>
     <p style={{ fontFamily: "'DM Sans'", fontSize: 13, color: "#475569" }}>
       No data yet. Complete lessons to appear here.
     </p>
   </div>
-) : leaderboard.map((entry, i) => (
+) : topDevs.map((entry, i) => (
   <div key={entry.id} style={{
     display: "grid", gridTemplateColumns: "36px 1fr 56px", gap: "0 8px",
     alignItems: "center", padding: "9px 0",
-    borderBottom: i < leaderboard.length - 1 ? "1px solid rgba(255,255,255,.04)" : "none",
+    borderBottom: i < topDevs.length - 1 ? "1px solid rgba(255,255,255,.04)" : "none",
     background: entry.isYou ? "rgba(99,102,241,.06)" : "transparent",
     borderRadius: entry.isYou ? 8 : 0,
   }}>
+    {/* ...rest of the row unchanged... */}
     <span style={{ fontFamily: "'JetBrains Mono'", fontSize: 12, color: entry.isYou ? "#6366F1" : "#475569", fontWeight: 600 }}>
       {String(entry.rank).padStart(2, "0")}
     </span>
