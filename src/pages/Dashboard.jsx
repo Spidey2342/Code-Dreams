@@ -233,7 +233,7 @@ useEffect(() => {
   );
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#0A0A0F" }}>
+    <div style={{ display: "flex", minHeight: "120vh", background: "#0A0A0F" }}>
 
       {/* Sidebar overlay backdrop on mobile */}
       {(mob || tablet) && sidebarOpen && (
