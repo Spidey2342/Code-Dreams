@@ -32,6 +32,7 @@ user: {
   me: () => request("/api/user/me"),
   leaderboard: () => request("/api/user/leaderboard"),
   activity: () => request("/api/user/activity"),
+  referral: () => request("/api/user/referral")
 },
  tracks: {
   getAll: () => request("/api/tracks"),
@@ -44,7 +45,7 @@ user: {
   run: (code, language = "python") =>
     request("/api/code/run", { method: "POST", body: JSON.stringify({ code, language }) }),
 },
-referral: () => request("/api/user/referral"),
+
 setReferralCode: (code) => request("/api/user/referral", { method: "POST", body: JSON.stringify({ code }) }),
 };
 
