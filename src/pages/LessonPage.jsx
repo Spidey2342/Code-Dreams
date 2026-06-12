@@ -41,6 +41,7 @@ export default function LessonPage() {
 const [currentUser, setCurrentUser] = useState(null);
 
   const isPython = trackSlug === "python-fundamentals";
+  const isJavaScript = trackSlug === "javascript";  
 const isLocked = lesson?.locked === true;
   useEffect(() => {
     if (!isPython) return;
@@ -120,11 +121,15 @@ const runCode = async () => {
       } finally {
         setRunning(false);
       }
-    } else {
-      setOutputError(false);
-      setPreview(code);
-      setShowPreview(true);
-    }
+    } else if (isJavaScript) {
+  setOutputError(false);
+  setPreview(buildJsPreview(code));
+  setShowPreview(true);
+} else {
+  setOutputError(false);
+  setPreview(code);
+  setShowPreview(true);
+}
   };
 
   const currentIndex = allLessons.findIndex((l) => l.id === lesson?.id);
@@ -224,6 +229,39 @@ const runCode = async () => {
   const keyConcepts = lesson.content.keyConcepts || [];
   const exerciseDesc = lesson.content.exerciseDescription || "";
   const diagramLabel = lesson.content.diagramLabel || "";
+
+
+  function buildJsPreview(userCode) {
+  return `<!doctype html><html><head><meta charset="utf-8" />
+<style>
+  body { margin:0; font-family: system-ui, sans-serif; }
+  #__app { padding:16px; min-height:32px; background:#fff; }
+  #__console { font-family:'JetBrains Mono',monospace; font-size:13px; line-height:1.7;
+    background:#0D1117; padding:14px 16px; margin:0; white-space:pre-wrap; min-height:80px; }
+  #__console .log{color:#10B981;} #__console .err{color:#EF4444;}
+  #__console .warn{color:#F59E0B;} #__console .muted{color:#475569;}
+</style></head><body>
+<div id="__app"></div><div id="__console"></div>
+<script>
+(function(){
+  var box=document.getElementById('__console');
+  function fmt(a){try{return typeof a==='object'?JSON.stringify(a):String(a);}catch(e){return String(a);}}
+  function write(cls,args){var l=document.createElement('div');l.className=cls;
+    l.textContent=Array.prototype.map.call(args,fmt).join(' ');box.appendChild(l);}
+  console.log=function(){write('log',arguments);};
+  console.info=function(){write('log',arguments);};
+  console.warn=function(){write('warn',arguments);};
+  console.error=function(){write('err',arguments);};
+  window.onerror=function(m){write('err',[m]);return true;};
+  try {
+${userCode}
+  } catch(e){ write('err',[e.message]); }
+  if(!box.children.length && !document.getElementById('__app').children.length){
+    write('muted',['Program ran with no output. Use console.log() to see results.']);
+  }
+})();
+</script></body></html>`;
+}
 
   return (
     <div style={{ height: "100vh", background: "#0A0A0F", display: "flex", flexDirection: "column", overflow: "hidden" }}>
@@ -610,7 +648,7 @@ const runCode = async () => {
                 fontFamily: "'JetBrains Mono'", fontSize: 11, color: "#94A3B8",
               }}>
                 <span style={{ fontSize: 10 }}>📄</span>
-               {isPython ? "main.py" : "index.html"}
+             {isJavaScript ? "script.js" : isPython ? "main.py" : "index.html"}
               </div>
               <div style={{ flex: 1 }} />
               <div style={{ display: "flex", alignItems: "center", gap: 5, fontFamily: "'DM Sans'", fontSize: 11, color: "#10B981" }}>
@@ -634,7 +672,7 @@ const runCode = async () => {
               }}>
                 <Editor
                   height="100%"
-                  defaultLanguage={isPython ? "python" : lesson.order <= 5 ? "html" : "css"}
+                  defaultLanguage={isJavaScript ? "javascript" : isPython ? "python" : lesson.order <= 5 ? "html" : "css"}
                   theme="vs-dark"
                   value={code}
                   onChange={(v) => setCode(v || "")}
