@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { icon: "</T>", label: "Other Tracks", path: "/tracks" },
   { icon: "✦", label: "Certificates", path: "/certificates" },
   { icon: "⚙", label: "Settings", path: "/settings" },
+  { icon: "🎁", label: "Invite Friends", path: "/referral" }
 ];
 
 const MOCK_ACTIVITY = [];

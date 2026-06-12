@@ -44,6 +44,8 @@ user: {
   run: (code, language = "python") =>
     request("/api/code/run", { method: "POST", body: JSON.stringify({ code, language }) }),
 },
+referral: () => request("/api/user/referral"),
+setReferralCode: (code) => request("/api/user/referral", { method: "POST", body: JSON.stringify({ code }) }),
 };
 
   const API_URL = import.meta.env.VITE_API_URL || "https://code-dreams-backend.onrender.com";
