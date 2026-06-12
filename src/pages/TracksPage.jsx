@@ -11,7 +11,7 @@ const ALL_TRACKS = [
     icon: "🌐",
     color: "#E34F26",
     difficulty: "Beginner",
-    lessons: 10,
+    lessons: 30,
     desc: "Master the building blocks of the web. Learn semantic markup and modern styling.",
   },
   {
@@ -20,7 +20,7 @@ const ALL_TRACKS = [
     icon: "🐍",
     color: "#3776AB",
     difficulty: "Beginner",
-    lessons: 10,
+    lessons: 30,
     desc: "Learn Python from scratch. Variables, loops, functions, and real Ghanaian projects.",
   },
   {
@@ -31,7 +31,6 @@ const ALL_TRACKS = [
     difficulty: "Intermediate",
     lessons: 40,
     desc: "DOM manipulation, async programming, and modern ES6+ syntax.",
-    comingSoon: true,
   },
   {
     name: "Full Stack Engineering",
